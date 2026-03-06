@@ -17,6 +17,23 @@
       --rule:    #e0ddd7;
       --gold:    #8b6914;
       --red:     #b83228;
+      --plot-bg: #ffffff;
+      --grid:    #eeece8;
+      --zero:    #ccc9c3;
+    }
+
+    [data-theme="dark"] {
+      --bg:      #111110;
+      --surface: #1c1c1a;
+      --ink:     #e8e6e0;
+      --mid:     #9b9994;
+      --dim:     #525050;
+      --rule:    #2e2d2a;
+      --gold:    #c99a30;
+      --red:     #d94438;
+      --plot-bg: #1c1c1a;
+      --grid:    #252420;
+      --zero:    #3a3935;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,6 +44,7 @@
       color: var(--ink);
       font-size: 12px;
       min-height: 100vh;
+      transition: background 0.2s, color 0.2s;
     }
 
     /* ── Top bar ── */
@@ -328,6 +346,38 @@
       line-height: 1.8;
     }
 
+    /* ── Theme toggle ── */
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--mid);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    .theme-icon {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    /* dark mode select arrow override */
+    [data-theme="dark"] select {
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239b9994' stroke-width='1.2'/%3E%3C/svg%3E");
+    }
+
     /* Scrollbar styling for sidebar */
     .sidebar::-webkit-scrollbar { width: 3px; }
     .sidebar::-webkit-scrollbar-track { background: transparent; }
@@ -354,7 +404,13 @@
     <div style="font-size:10px;color:var(--dim);margin-top:2px">
       by shermaine ang
     </div>
-    <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">
+        <span class="theme-icon" id="theme-icon">☽</span>
+        <span id="theme-label">Dark</span>
+      </button>
+    </div>
   </div>
 
   <div class="layout">
@@ -685,19 +741,26 @@
     const chartHeight = Math.max(300, 80 + n * 68);
     document.getElementById('chart').style.minHeight = chartHeight + 'px';
 
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const plotBg   = dark ? '#1c1c1a' : '#ffffff';
+    const gridCol  = dark ? '#252420' : '#eeece8';
+    const zeroCol  = dark ? '#3a3935' : '#ccc9c3';
+    const fontCol  = dark ? '#e8e6e0' : '#1a1a18';
+    const ruleCol  = dark ? '#2e2d2a' : '#e0ddd7';
+
     Plotly.react('chart', traces, {
       paper_bgcolor: 'transparent',
-      plot_bgcolor:  '#ffffff',
-      font: { family:"'DM Mono',monospace", color:'#1a1a18', size:10 },
+      plot_bgcolor:  plotBg,
+      font: { family:"'DM Mono',monospace", color: fontCol, size:10 },
       margin: { l:180, r:16, t:16, b:46 },
       showlegend: false,
       height: chartHeight,
-      shapes,
+      shapes: shapes.map(s => s.type === 'line' ? { ...s, line: { ...s.line, color: ruleCol } } : s),
       xaxis: {
         title: { text:'Radial Velocity (m/s)', font:{size:11} },
         range: [-state.vRange, state.vRange],
-        gridcolor: '#eeece8', zerolinecolor:'#ccc9c3',
-        tickfont:{size:9}, linecolor:'#e0ddd7',
+        gridcolor: gridCol, zerolinecolor: zeroCol,
+        tickfont:{size:9}, linecolor: ruleCol,
       },
       yaxis: {
         tickmode:'array', tickvals:tickVals, ticktext:tickText,
@@ -807,6 +870,16 @@
     clearTimeout(window._tb);
     window._tb = setTimeout(render, 80);
   });
+
+  // ── Theme toggle ─────────────────────────────────────────────────
+  function toggleTheme() {
+    const html  = document.documentElement;
+    const dark  = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', dark ? '' : 'dark');
+    document.getElementById('theme-icon').textContent  = dark ? '☽' : '○';
+    document.getElementById('theme-label').textContent = dark ? 'Dark' : 'Light';
+    render(); // re-render chart with new colours
+  }
 
   // ── Init ─────────────────────────────────────────────────────────
   buildPrfRows();
