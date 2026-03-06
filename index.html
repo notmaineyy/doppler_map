@@ -522,10 +522,10 @@
   <!-- Top bar -->
   <div class="topbar">
     <h1>doppler visibility map</h1>
-    <div style="font-size:10px;color:var(--dim);margin-top:2px">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:10px;color:var(--dim);margin-top:2px">
       by shermaine ang
     </div>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">
         <span class="theme-icon" id="theme-icon">☽</span>
@@ -611,20 +611,7 @@
         <div id="chart"></div>
       </div>
 
-      <div class="legend">
-        <div class="leg-item">
-          <div class="leg-swatch" style="background:#2563eb;opacity:0.6"></div>
-          Visible — target detectable
-        </div>
-        <div class="leg-item">
-          <div class="leg-swatch" style="background:#b83228;opacity:0.5"></div>
-          Blind zone — target undetectable
-        </div>
-        <div class="leg-item">
-          <div class="leg-swatch" style="background:#8b6914;opacity:0.65"></div>
-          Combined — detectable by ALL PRFs
-        </div>
-      </div>
+      <div class="legend" id="legend"></div>
 
       <!-- Collapsible explainer -->
       <div class="explainer">
@@ -903,6 +890,25 @@
     const lam = C / state.f;
     document.getElementById('hdr-info').textContent =
       `f = ${(state.f/1e9).toFixed(2)} GHz · λ = ${(lam*100).toFixed(2)} cm`;
+
+    // Update legend dynamically to reflect active PRF colours
+    const legendEl = document.getElementById('legend');
+    const prfSwatches = state.prfs.map((prf, i) => {
+      const col = COLORS[i % COLORS.length];
+      return `<div class="leg-item">
+        <div class="leg-swatch" style="background:${col};opacity:0.6"></div>
+        PRF${i+1} — visible
+      </div>`;
+    }).join('');
+    legendEl.innerHTML = prfSwatches + `
+      <div class="leg-item">
+        <div class="leg-swatch" style="background:#b83228;opacity:0.5"></div>
+        Blind zone
+      </div>
+      <div class="leg-item">
+        <div class="leg-swatch" style="background:#8b6914;opacity:0.65"></div>
+        Combined — all PRFs
+      </div>`;
 
     rows.forEach((r, i) => {
       const el = document.getElementById(`vua-${i}`);
