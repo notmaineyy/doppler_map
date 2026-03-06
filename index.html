@@ -5,165 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Doppler Visibility Map</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --bg:      #f2f0eb;
-      --surface: #faf9f6;
-      --ink:     #1c1c1a;
+      --bg:      #f5f4f0;
+      --surface: #ffffff;
+      --ink:     #1a1a18;
       --mid:     #6b6b67;
-      --dim:     #a8a8a4;
-      --rule:    #dddbd6;
+      --dim:     #b0aea9;
+      --rule:    #e0ddd7;
       --gold:    #8b6914;
-      --red:     #c0392b;
-      --info-bg: #f0ede6;
-
-      --p1:#2563eb; --p2:#16a34a; --p3:#d97706;
-      --p4:#9333ea; --p5:#0891b2; --p6:#be185d;
-
-      --sans:  'DM Mono','Courier New',monospace;
-      --serif: 'DM Serif Display',Georgia,serif;
+      --red:     #b83228;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
+      font-family: 'DM Mono', monospace;
       background: var(--bg);
       color: var(--ink);
-      font-family: var(--sans);
       font-size: 12px;
-      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
     }
 
-    /* ── HEADER ─────────────────────────────── */
-    .site-header {
+    /* ── Title ── */
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
       border-bottom: 1px solid var(--ink);
-      padding: 22px 32px 16px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 24px;
+      padding-bottom: 12px;
+      margin-bottom: 28px;
       flex-wrap: wrap;
-      background: var(--surface);
-    }
-
-    h1 {
-      font-family: var(--serif);
-      font-size: clamp(20px, 3vw, 32px);
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1;
-    }
-
-    .header-meta { font-size: 11px; color: var(--mid); text-align: right; }
-    .header-meta span { display: block; }
-
-    /* ── LAYOUT ─────────────────────────────── */
-    .layout {
-      display: grid;
-      grid-template-columns: 268px 1fr;
-      min-height: calc(100vh - 68px);
-    }
-
-    @media (max-width: 800px) {
-      .layout { grid-template-columns: 1fr; }
-      .sidebar { border-right: none; border-bottom: 1px solid var(--rule); }
-    }
-
-    /* ── SIDEBAR ────────────────────────────── */
-    .sidebar {
-      border-right: 1px solid var(--rule);
-      padding: 20px 18px;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      overflow-y: auto;
-    }
-
-    .section-title {
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--dim);
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--rule);
-      margin-bottom: 12px;
-    }
-
-    /* Tooltip system */
-    .tip-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    .tip-icon {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      border: 1px solid var(--dim);
-      color: var(--dim);
-      font-size: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      margin-top: 1px;
-      transition: border-color 0.1s, color 0.1s;
-      user-select: none;
-    }
-
-    .tip-icon:hover { border-color: var(--ink); color: var(--ink); }
-
-    .tip-body {
-      display: none;
-      font-size: 10px;
-      color: var(--mid);
-      line-height: 1.55;
-      background: var(--info-bg);
-      border-left: 2px solid var(--rule);
-      padding: 6px 8px;
-      margin-bottom: 8px;
-    }
-
-    .tip-body.open { display: block; }
-
-    .tip-body code {
-      font-family: var(--sans);
-      font-size: 10px;
-      color: var(--ink);
-      background: var(--rule);
-      padding: 1px 4px;
-    }
-
-    /* Form controls */
-    .param-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
       gap: 8px;
     }
 
-    .param-label { font-size: 11px; color: var(--mid); }
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-weight: 400;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--mid);
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px 32px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      padding: 20px 24px;
+    }
+
+    .ctrl-group {}
+
+    .ctrl-label {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 10px;
+    }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .field-name {
+      font-size: 11px;
+      color: var(--mid);
+    }
 
     input[type="number"] {
-      width: 76px;
+      width: 80px;
       background: transparent;
       border: none;
       border-bottom: 1px solid var(--rule);
       outline: none;
-      font-family: var(--sans);
+      font-family: 'DM Mono', monospace;
       font-size: 12px;
       color: var(--ink);
       text-align: right;
       padding: 2px 0;
-      transition: border-color 0.15s;
     }
 
     input[type="number"]:focus { border-bottom-color: var(--ink); }
@@ -174,1031 +109,630 @@
       border: none;
       border-bottom: 1px solid var(--rule);
       outline: none;
-      font-family: var(--sans);
+      font-family: 'DM Mono', monospace;
       font-size: 11px;
       color: var(--ink);
-      padding: 4px 20px 4px 0;
+      padding: 3px 18px 3px 0;
       cursor: pointer;
       appearance: none;
-      -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236b6b67' stroke-width='1.2'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 2px center;
+    }
+
+    /* PRF sliders */
+    .prf-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 72px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+
+    .prf-tag {
+      font-size: 10px;
+      color: var(--mid);
+      white-space: nowrap;
+    }
+
+    .prf-val {
+      font-size: 11px;
+      color: var(--ink);
+      text-align: right;
+      font-weight: 500;
     }
 
     input[type="range"] {
       -webkit-appearance: none; appearance: none;
       width: 100%; height: 1px;
       background: var(--rule); outline: none; cursor: pointer;
-      margin: 5px 0 2px;
     }
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--ink); cursor: pointer; transition: transform 0.1s;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: var(--ink); cursor: pointer;
     }
 
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.4); }
     input[type="range"]::-moz-range-thumb {
-      width:10px; height:10px; border-radius:50%;
-      background:var(--ink); border:none; cursor:pointer;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: var(--ink); border: none; cursor: pointer;
     }
 
-    .range-header {
-      display: flex; justify-content: space-between;
-      font-size: 11px; margin-bottom: 3px;
-    }
-
-    .range-header .rl { color: var(--mid); }
-    .range-header .rv { color: var(--ink); }
-
-    /* PRF sliders */
-    .prf-item { margin-bottom: 14px; }
-
-    .prf-header {
-      display: flex; justify-content: space-between;
-      align-items: baseline; margin-bottom: 4px;
-    }
-
-    .prf-name { font-size: 10px; color: var(--mid); }
-    .prf-val  { font-size: 12px; font-weight: 500; color: var(--ink); }
-    .prf-vua  { font-size: 9px; color: var(--dim); margin-top: 2px; }
-
-    /* Presets */
-    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-
-    .btn-preset {
-      background: transparent; border: 1px solid var(--rule);
-      font-family: var(--sans); font-size: 9px; letter-spacing: 0.04em;
-      color: var(--mid); padding: 6px 4px; cursor: pointer;
-      transition: all 0.1s; text-align: center;
-    }
-
-    .btn-preset:hover { border-color: var(--ink); color: var(--ink); }
-
-    .btn-export {
-      width: 100%; background: transparent; border: 1px solid var(--ink);
-      font-family: var(--sans); font-size: 10px; letter-spacing: 0.08em;
-      color: var(--ink); padding: 9px; cursor: pointer; transition: all 0.12s;
-    }
-
-    .btn-export:hover { background: var(--ink); color: var(--surface); }
-
-    /* ── MAIN ───────────────────────────────── */
-    .main { display: flex; flex-direction: column; }
-
-    /* Coverage strip */
-    .coverage-strip {
-      display: flex; border-bottom: 1px solid var(--rule);
-      background: var(--surface); overflow-x: auto;
-    }
-
-    .cov-cell {
-      flex: 1; min-width: 76px; padding: 10px 12px;
-      border-right: 1px solid var(--rule);
-    }
-
-    .cov-cell:last-child { border-right: none; background: #fffbf2; }
-
-    .cov-label {
-      font-size: 9px; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--dim); margin-bottom: 2px;
-    }
-
-    .cov-value {
-      font-family: var(--serif); font-size: 20px;
-      line-height: 1; color: var(--ink);
-    }
-
-    .cov-cell:last-child .cov-value { color: var(--gold); }
-
-    .cov-bar-track { height: 2px; background: var(--rule); margin-top: 5px; }
-
-    .cov-bar-fill {
-      height: 100%; background: var(--ink); transition: width 0.3s ease;
-    }
-
-    .cov-cell:last-child .cov-bar-fill { background: var(--gold); }
-
-    /* Tabs */
-    .tabs {
-      display: flex; border-bottom: 1px solid var(--rule);
-      background: var(--surface); padding: 0 16px;
-      align-items: center; gap: 4px;
-    }
-
-    .tab {
-      font-size: 10px; letter-spacing: 0.05em;
-      padding: 9px 12px; border: none; background: transparent;
-      color: var(--dim); cursor: pointer;
-      border-bottom: 1.5px solid transparent;
-      margin-bottom: -1px; font-family: var(--sans);
-      transition: color 0.1s;
-    }
-
-    .tab:hover { color: var(--ink); }
-    .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
-
-    .tab-sep { color: var(--rule); font-size: 10px; margin-left: auto; }
-
-    /* Info panel toggle */
-    .info-toggle {
-      font-size: 9px; letter-spacing: 0.06em; color: var(--mid);
-      background: transparent; border: 1px solid var(--rule);
-      font-family: var(--sans); padding: 4px 10px;
-      cursor: pointer; transition: all 0.1s;
-    }
-
-    .info-toggle:hover { border-color: var(--ink); color: var(--ink); }
-    .info-toggle.active { background: var(--ink); color: var(--surface); border-color: var(--ink); }
-
-    /* Charts */
-    .chart-area { flex: 1; padding: 16px 20px 12px; background: var(--bg); }
-    .chart-hidden { display: none; }
-
-    #visibility-chart,
-    #frequency-chart,
-    #coverage-chart { width: 100%; min-height: 460px; }
-
-    /* ── EXPLAINER PANEL ────────────────────── */
-    .explainer {
-      display: none;
-      border-top: 1px solid var(--rule);
+    /* ── Chart ── */
+    .chart-wrap {
       background: var(--surface);
-      padding: 24px 28px;
-    }
-
-    .explainer.open { display: block; }
-
-    .exp-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 24px 32px;
-      margin-top: 16px;
-    }
-
-    .exp-block { }
-
-    .exp-title {
-      font-size: 9px; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--dim);
-      padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+      border: 1px solid var(--rule);
+      padding: 4px 4px 0;
       margin-bottom: 8px;
     }
 
-    .exp-body {
-      font-size: 11px; color: var(--mid); line-height: 1.65;
-    }
+    #chart { width: 100%; min-height: 420px; }
 
-    .exp-body code {
-      font-family: var(--sans); font-size: 10.5px;
-      color: var(--ink); background: var(--info-bg);
-      padding: 1px 4px; display: inline-block; margin: 1px 0;
-    }
-
-    .exp-formula {
-      font-family: var(--sans); font-size: 11px;
-      background: var(--info-bg); border-left: 2px solid var(--rule);
-      padding: 7px 10px; margin: 8px 0; color: var(--ink);
-      line-height: 1.8;
-    }
-
-    /* Reading guide below chart */
-    .chart-guide {
-      margin-top: 10px;
+    /* ── Legend ── */
+    .legend {
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
-      align-items: center;
+      padding: 10px 4px;
+      margin-bottom: 28px;
     }
 
-    .guide-item {
+    .leg-item {
       display: flex; align-items: center; gap: 6px;
       font-size: 10px; color: var(--mid);
     }
 
-    .guide-swatch {
-      width: 18px; height: 8px; flex-shrink: 0;
+    .leg-swatch {
+      width: 20px; height: 7px; flex-shrink: 0;
     }
 
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 18px; right: 18px;
-      background: var(--ink); color: var(--surface);
-      font-family: var(--sans); font-size: 11px;
-      padding: 7px 12px; opacity: 0;
-      transform: translateY(5px); transition: all 0.22s;
-      pointer-events: none; z-index: 999;
+    /* ── Explainer ── */
+    .explainer {
+      border-top: 1px solid var(--rule);
+      padding-top: 24px;
     }
 
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .exp-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      font-weight: 400;
+      margin-bottom: 18px;
+      color: var(--ink);
+    }
+
+    .exp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px 32px;
+    }
+
+    .exp-block {}
+
+    .exp-title {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 8px;
+    }
+
+    .exp-body {
+      font-size: 11px;
+      color: var(--mid);
+      line-height: 1.65;
+    }
+
+    .formula {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      border-left: 2px solid var(--rule);
+      padding: 6px 10px;
+      margin: 7px 0;
+      color: var(--ink);
+      line-height: 1.8;
+    }
   </style>
 </head>
-
 <body>
 
-<!-- ── HEADER ──────────────────────────────────────────── -->
-<header class="site-header">
-  <h1>Doppler Visibility Map</h1>
-  <div class="header-meta">
-    <span id="hdr-freq">9.50 GHz</span>
-    <span id="hdr-lambda">λ = 3.16 cm</span>
+  <!-- Title -->
+  <div class="title-row">
+    <h1>Doppler Visibility Map</h1>
+    <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
   </div>
-</header>
 
-<div class="layout">
+  <!-- Controls -->
+  <div class="controls">
 
-  <!-- ── SIDEBAR ─────────────────────────────────────── -->
-  <aside class="sidebar">
+    <!-- Radar -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Radar</div>
 
-    <!-- Radar Parameters -->
-    <div>
-      <div class="section-title">Radar Parameters</div>
+      <div class="field-row">
+        <span class="field-name">Band</span>
+      </div>
+      <select id="band-select" style="margin-bottom:12px">
+        <option value="0.3">P-band  —  0.3 GHz</option>
+        <option value="1.3">L-band  —  1.3 GHz</option>
+        <option value="3.0">S-band  —  3.0 GHz</option>
+        <option value="5.6">C-band  —  5.6 GHz</option>
+        <option value="9.5" selected>X-band  —  9.5 GHz</option>
+        <option value="15">Ku-band —  15 GHz</option>
+        <option value="35">Ka-band —  35 GHz</option>
+      </select>
 
-      <!-- Frequency -->
-      <div class="tip-row">
-        <span class="tip-icon" onclick="toggleTip('tip-freq')">?</span>
-        <div style="flex:1">
-          <div class="param-row">
-            <span class="param-label">Frequency (GHz)</span>
-            <input type="number" id="freq-input" value="9.5" min="0.1" max="100" step="0.1" />
-          </div>
+      <div class="field-row" style="margin-top:4px">
+        <span class="field-name">Velocity range ±</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" id="vrange" value="500" min="50" max="3000" step="50" />
+          <span style="color:var(--dim)">m/s</span>
         </div>
       </div>
-      <div class="tip-body" id="tip-freq">
-        The radar carrier frequency. This determines the wavelength:
-        <code>λ = c / f</code>. Higher frequency = shorter wavelength = smaller
-        unambiguous velocity per PRF. X-band (9.5 GHz) is typical for weather
-        and airborne radars.
-      </div>
 
-      <div style="margin-bottom:12px">
-        <div class="param-label" style="margin-bottom:5px">Band preset</div>
-        <select id="band-select">
-          <option value="0.3">P  — 300 MHz</option>
-          <option value="1.3">L  — 1.3 GHz</option>
-          <option value="3.0">S  — 3 GHz</option>
-          <option value="5.6">C  — 5.6 GHz</option>
-          <option value="9.5" selected>X  — 9.5 GHz</option>
-          <option value="15">Ku — 15 GHz</option>
-          <option value="35">Ka — 35 GHz</option>
-          <option value="94">W  — 94 GHz</option>
-        </select>
-      </div>
-
-      <!-- Velocity range -->
-      <div class="tip-row">
-        <span class="tip-icon" onclick="toggleTip('tip-vrange')">?</span>
-        <div style="flex:1">
-          <div class="param-row">
-            <span class="param-label">Vel. range ± (m/s)</span>
-            <input type="number" id="vrange-input" value="600" min="50" max="5000" step="50" />
-          </div>
+      <div style="margin-top:10px">
+        <div class="field-row" style="margin-bottom:4px">
+          <span class="field-name">Blind zone width</span>
+          <span id="bfval" style="color:var(--ink)">5%</span>
         </div>
-      </div>
-      <div class="tip-body" id="tip-vrange">
-        The velocity axis spans from <code>−range</code> to <code>+range</code> m/s.
-        Negative = target moving towards radar, positive = moving away.
-        Set this to the maximum speed you expect your targets to travel.
-      </div>
-
-      <!-- Blind zone -->
-      <div class="tip-row">
-        <span class="tip-icon" onclick="toggleTip('tip-blind')">?</span>
-        <div style="flex:1">
-          <div class="range-header">
-            <span class="rl">Blind zone width</span>
-            <span class="rv" id="bf-display">5%</span>
-          </div>
-          <input type="range" id="bf-slider" min="1" max="20" step="1" value="5" />
-        </div>
-      </div>
-      <div class="tip-body" id="tip-blind">
-        In practice, the blind zone around each blind speed has a finite width
-        caused by filter roll-off in the clutter rejection filter. This slider
-        sets that width as a % of the unambiguous velocity interval. Typical
-        values are 3–8%. Wider = more filtering but more target loss.
+        <input type="range" id="bf" min="1" max="15" step="1" value="5" />
       </div>
     </div>
 
-    <!-- PRF Settings -->
-    <div>
-      <div class="tip-row">
-        <span class="tip-icon" onclick="toggleTip('tip-prf')">?</span>
-        <span class="section-title" style="border:none;padding:0;margin:0">PRF Settings</span>
-      </div>
-      <div class="tip-body" id="tip-prf" style="margin-bottom:12px">
-        PRF = Pulse Repetition Frequency — how many pulses the radar fires per second (Hz).
-        A higher PRF means the radar "samples" the Doppler shift more often, which raises
-        the unambiguous velocity <code>v_ua = λ × PRF / 2</code>. But higher PRFs also
-        reduce the maximum unambiguous range. Staggering multiple PRFs trades off these
-        constraints.
-      </div>
-      <div style="border-bottom:1px solid var(--rule); margin-bottom:12px"></div>
-      <div id="prf-controls"></div>
-    </div>
-
-    <!-- Presets -->
-    <div>
-      <div class="tip-row">
-        <span class="tip-icon" onclick="toggleTip('tip-presets')">?</span>
-        <span class="section-title" style="border:none;padding:0;margin:0">Presets</span>
-      </div>
-      <div class="tip-body" id="tip-presets" style="margin-bottom:10px">
-        Typical PRF sets used in real radar modes. Each preset loads a
-        set of PRFs and a carrier frequency appropriate for that application.
-      </div>
-      <div style="border-bottom:1px solid var(--rule); margin-bottom:10px"></div>
-      <div class="preset-grid">
-        <button class="btn-preset" onclick="loadPreset('stagger3')">3-PRF Stagger</button>
-        <button class="btn-preset" onclick="loadPreset('stagger6')">6-PRF Stagger</button>
-        <button class="btn-preset" onclick="loadPreset('airborne')">Airborne</button>
-        <button class="btn-preset" onclick="loadPreset('maritime')">Maritime</button>
-        <button class="btn-preset" onclick="loadPreset('groundmap')">Ground Map</button>
-        <button class="btn-preset" onclick="loadPreset('lowprf')">Low PRF</button>
-      </div>
-    </div>
-
-    <div style="margin-top:auto">
-      <button class="btn-export" onclick="exportCSV()">Export CSV</button>
-    </div>
-
-  </aside>
-
-  <!-- ── MAIN ─────────────────────────────────────────── -->
-  <div class="main">
-
-    <!-- Coverage strip -->
-    <div class="coverage-strip" id="cov-strip"></div>
-
-    <!-- Tabs + info toggle -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('visibility',this)">Visibility</button>
-      <button class="tab" onclick="switchTab('frequency',this)">Freq Domain</button>
-      <button class="tab" onclick="switchTab('coverage',this)">Coverage</button>
-      <span class="tab-sep"></span>
-      <button class="info-toggle" id="info-toggle-btn" onclick="toggleExplainer()">? How to read this</button>
-    </div>
-
-    <!-- Charts -->
-    <div class="chart-area">
-      <div id="visibility-chart"></div>
-      <div id="frequency-chart" class="chart-hidden"></div>
-      <div id="coverage-chart"  class="chart-hidden"></div>
-
-      <!-- Legend below chart -->
-      <div class="chart-guide" id="chart-guide">
-        <div class="guide-item">
-          <div class="guide-swatch" style="background:#2563eb;opacity:0.65"></div>
-          Visible (detectable)
-        </div>
-        <div class="guide-item">
-          <div class="guide-swatch" style="background:#c0392b;opacity:0.5"></div>
-          Blind zone (undetectable)
-        </div>
-        <div class="guide-item">
-          <div class="guide-swatch" style="background:#8b6914;opacity:0.7"></div>
-          Combined visibility (all PRFs)
+    <!-- PRFs -->
+    <div class="ctrl-group" style="grid-column: span 2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="ctrl-label" style="margin-bottom:0">Pulse Repetition Frequencies (PRF)</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="field-name">Number of PRFs</span>
+          <select id="prf-count" style="width:auto;padding-right:22px">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6" selected>6</option>
+          </select>
         </div>
       </div>
-    </div>
-
-    <!-- Explainer panel (toggled) -->
-    <div class="explainer" id="explainer">
-      <div style="font-family:var(--serif);font-size:18px;font-weight:400;letter-spacing:-0.01em">
-        How to read the Doppler Visibility Map
-      </div>
-
-      <div class="exp-grid">
-
-        <div class="exp-block">
-          <div class="exp-title">What you're looking at</div>
-          <div class="exp-body">
-            Each horizontal row represents one PRF. The row is coloured where
-            a target at that velocity <em>can</em> be detected, and red where
-            it <em>cannot</em> (a "blind speed"). The bottom row (Combined)
-            shows which velocities are simultaneously detectable by <em>all</em>
-            PRFs — this is what the radar actually sees.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Why blind speeds exist</div>
-          <div class="exp-body">
-            A pulsed radar samples the received signal at the PRF rate. Just like
-            audio aliasing, a target whose Doppler-shift frequency equals a multiple
-            of the PRF "folds back" to zero — it looks stationary to the radar.
-            These are the blind speeds:
-            <div class="exp-formula">
-              v<sub>blind</sub> = n × λ × PRF / 2
-              <br>where n = 0, ±1, ±2, …
-            </div>
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Unambiguous velocity (v_ua)</div>
-          <div class="exp-body">
-            Between consecutive blind speeds lies the unambiguous velocity interval.
-            Any target in this window produces a unique, correctly measured Doppler
-            reading. The interval width is:
-            <div class="exp-formula">v_ua = λ × PRF / 2</div>
-            Higher PRF or longer wavelength = wider interval.
-            The coverage % shown in the strip tells you what fraction of the
-            velocity axis falls inside visible zones.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Why stagger multiple PRFs</div>
-          <div class="exp-body">
-            A single PRF has blind speeds at regular intervals. By using several
-            PRFs with different values, each PRF's blind speeds fall at different
-            velocities. The <strong>Combined</strong> row shows only velocities
-            that are visible to every PRF at once — the blind gaps are much
-            narrower than for any single PRF, greatly improving detection
-            probability across all speeds.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Freq Domain tab</div>
-          <div class="exp-body">
-            Shows each PRF's harmonic lines — the exact positions of the blind
-            speeds on the velocity axis. Solid lines = the fundamental (first
-            blind speed). Dotted lines = harmonics. Good for checking whether
-            any two PRFs share a blind speed at the same velocity.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Coverage % (top strip)</div>
-          <div class="exp-body">
-            The percentage of the velocity axis that is <em>visible</em> (not
-            blind) for each PRF individually, and for the combined set. A single
-            PRF with 5% blind zone width gives ~95% individual coverage, but the
-            combined coverage drops as blind zones occasionally overlap. The goal
-            of PRF design is to maximise combined coverage.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Choosing good PRF ratios</div>
-          <div class="exp-body">
-            Simple integer ratios like 4:5, 4:5:6, or 5:6:7 give the best
-            stagger performance because their least-common-multiple is large —
-            meaning the first velocity where all PRFs are simultaneously blind
-            is pushed very high. Prime-number ratios (e.g. 5:7:11) give even
-            larger first combined blind speeds.
-          </div>
-        </div>
-
-        <div class="exp-block">
-          <div class="exp-title">Blind zone width slider</div>
-          <div class="exp-body">
-            Real clutter filters aren't perfect — they suppress a small band of
-            velocities around each blind speed, not just a single point. This
-            slider simulates that width as a fraction of v_ua. Increasing it
-            reduces coverage but models a more aggressive clutter filter (e.g.
-            for high-clutter environments like ground mapping).
-          </div>
-        </div>
-
-      </div>
+      <div id="prf-rows"></div>
     </div>
 
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <!-- Chart -->
+  <div class="chart-wrap">
+    <div id="chart"></div>
+  </div>
 
-<!-- ================================================================
-     JAVASCRIPT
-     ================================================================ -->
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg-item">
+      <div class="leg-swatch" style="background:#2563eb;opacity:0.6"></div>
+      Visible — target detectable
+    </div>
+    <div class="leg-item">
+      <div class="leg-swatch" style="background:#b83228;opacity:0.5"></div>
+      Blind zone — target undetectable
+    </div>
+    <div class="leg-item">
+      <div class="leg-swatch" style="background:#8b6914;opacity:0.65"></div>
+      Combined — detectable by ALL PRFs
+    </div>
+  </div>
+
+  <!-- Explainer -->
+  <div class="explainer">
+    <div class="exp-heading">Understanding the Doppler Visibility Map</div>
+
+    <div class="exp-grid">
+
+      <div class="exp-block">
+        <div class="exp-title">Step 1 — How pulsed radar measures velocity</div>
+        <div class="exp-body">
+          A pulsed radar fires short bursts of radio waves and listens for echoes.
+          When a target is moving, the returning echo has a slightly different
+          frequency from what was transmitted — this shift is called the
+          <strong>Doppler shift</strong>. A target moving <em>towards</em> the
+          radar returns a higher frequency; moving <em>away</em> returns a lower
+          one. By measuring this shift, the radar calculates the target's radial
+          velocity (speed directly towards or away from the radar).
+          <div class="formula">
+            Doppler shift = 2 × v × f / c<br>
+            where v = target velocity, f = radar frequency, c = speed of light
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 2 — The sampling problem (why blind speeds exist)</div>
+        <div class="exp-body">
+          A pulsed radar doesn't transmit continuously — it fires pulses at a
+          rate called the <strong>PRF (Pulse Repetition Frequency)</strong>, e.g.
+          1000 pulses per second. This means it samples the Doppler shift
+          1000 times per second. Just like recording audio at too low a sample
+          rate causes aliasing, sampling the Doppler at a finite PRF causes
+          certain target velocities to become <em>indistinguishable from a
+          stationary target</em>. These are the <strong>blind speeds</strong>.
+          <div class="formula">
+            v_blind = n × λ × PRF / 2<br>
+            where n = 0, ±1, ±2, … and λ = radar wavelength
+          </div>
+          At these exact velocities, the phase shift between consecutive pulses
+          is a perfect multiple of 360° — the radar sees no change pulse-to-pulse
+          and concludes the target is stationary (or non-existent).
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 3 — Unambiguous velocity (v_ua)</div>
+        <div class="exp-body">
+          The distance between consecutive blind speeds is called the
+          <strong>unambiguous velocity interval (v_ua)</strong>. Inside this
+          window, every velocity produces a unique Doppler reading — the radar
+          can correctly measure it.
+          <div class="formula">v_ua = λ × PRF / 2</div>
+          For example, an X-band radar (λ = 3 cm) at PRF = 1000 Hz gives:<br>
+          <div class="formula">v_ua = 0.03 × 1000 / 2 = 15 m/s</div>
+          This means blind speeds occur every 15 m/s — quite limiting for fast
+          targets. The <strong>v_ua value shown under each slider</strong> in this
+          tool updates live as you drag, so you can see this relationship directly.
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 4 — What you see on each row</div>
+        <div class="exp-body">
+          Each horizontal row in the chart is one PRF. Reading across the row
+          left to right:<br><br>
+          — <strong style="color:#2563eb">Coloured band</strong> = target at that velocity IS detectable.<br>
+          — <strong style="color:#b83228">Red band</strong> = target at that velocity is in a blind zone — it looks stationary and the radar cannot detect it.<br><br>
+          Notice how the red bands are evenly spaced within each row. The spacing
+          equals v_ua for that PRF. A higher PRF pushes those red bands further
+          apart (wider v_ua), so you see fewer but more widely spaced blind zones.
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 5 — Why use multiple PRFs (staggering)</div>
+        <div class="exp-body">
+          No single PRF is perfect — blind speeds are unavoidable. The solution
+          is to transmit several different PRFs in sequence. Each PRF has its
+          blind speeds at <em>different</em> velocities, because v_ua = λ × PRF / 2
+          changes with PRF. The <strong>Combined row</strong> at the bottom shows
+          which velocities a target is detectable at by <em>all</em> PRFs
+          simultaneously — the blind gaps collapse dramatically.
+          <br><br>
+          Try this: set just 1 PRF and observe how much of the axis is red.
+          Then increase to 3 or 6 PRFs and watch the Combined row fill in.
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 6 — Choosing good PRF ratios</div>
+        <div class="exp-body">
+          The best stagger performance comes from PRFs whose ratios are simple
+          integers with a large least-common-multiple. For example:
+          <div class="formula">
+            4:5:6  → e.g. 1000, 1250, 1500 Hz<br>
+            5:6:7  → e.g. 1000, 1200, 1400 Hz
+          </div>
+          These ratios mean the first velocity where <em>all</em> PRFs are
+          simultaneously blind is pushed very high — far beyond the velocity
+          range of interest. Conversely, if you set two PRFs very close together
+          (e.g. 1000 and 1010 Hz), their blind speeds nearly coincide and the
+          Combined row becomes mostly red. Try it with the sliders.
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 7 — Blind zone width</div>
+        <div class="exp-body">
+          A real radar doesn't just lose targets at a single exact velocity —
+          it loses them over a small <em>band</em> around each blind speed.
+          This is because the clutter rejection filter (which suppresses
+          stationary ground returns) has a finite roll-off. The
+          <strong>blind zone width slider</strong> in this tool simulates
+          that width as a percentage of v_ua. Increasing it models a more
+          aggressive filter, widening the red bands and reducing coverage.
+          Typical real values are 3–8%.
+        </div>
+      </div>
+
+      <div class="exp-block">
+        <div class="exp-title">Step 8 — Coverage % explained</div>
+        <div class="exp-body">
+          The percentage in brackets on each row label (e.g. "PRF1  1000 Hz  (95%)")
+          tells you what fraction of the total velocity axis is
+          <em>not</em> in a blind zone for that PRF. A single PRF with 5%
+          blind zone width gives ~95% individual coverage, because the red
+          bands take up 5% of each v_ua interval. The
+          <strong>Combined coverage</strong> is lower, because blind zones
+          from different PRFs sometimes overlap. The goal of PRF design is
+          to choose values that maximise combined coverage.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 <script>
-/* ── Constants ─────────────────────────────────────────────────────
-   C = speed of light in m/s. Used to convert radar frequency to
-   wavelength: λ = C / f
-   ───────────────────────────────────────────────────────────────── */
-const C = 3e8;
+  const C = 3e8;
+  const COLORS = ['#2563eb','#16a34a','#d97706','#9333ea','#0891b2','#be185d'];
 
-/* ── Application state ─────────────────────────────────────────────
-   One object holds all the "live" values that drive the computation.
-   Whenever the user moves a slider, we update this object and call
-   render() to recompute and redraw everything.
-   ───────────────────────────────────────────────────────────────── */
-const state = {
-  fRadar:        9.5e9,   // Carrier frequency in Hz
-  vRange:        600,     // ± velocity axis in m/s
-  blindFraction: 0.05,    // Width of each blind zone (fraction of v_ua)
-  nPoints:       3000,    // Resolution of the velocity axis
-  prfs: [1000, 1250, 1500, 1750, 2000, 2500], // PRF values in Hz
-  tab: 'visibility',      // Which chart tab is active
-};
+  const state = {
+    f: 9.5e9,
+    vRange: 500,
+    bf: 0.05,
+    prfs: [1000, 1250, 1500, 1750, 2000, 2500],
+  };
 
-/* ── Colour palette — one distinct colour per PRF ─────────────────── */
-const PRF_COLORS = ['#2563eb','#16a34a','#d97706','#9333ea','#0891b2','#be185d'];
+  // ── Maths ──────────────────────────────────────────────────────────
+  // Positive modulo — keeps result in [0, n) even for negative inputs
+  function mod(a, n) { return ((a % n) + n) % n; }
 
-/* ── Presets — typical real-world radar configurations ─────────────
-   Each preset gives a set of PRF values and a carrier frequency
-   representative of that radar application.
-   ───────────────────────────────────────────────────────────────── */
-const PRESETS = {
-  stagger3:  { prfs:[1000,1250,1500,1750,2000,2500], f:9.5e9, label:'X-band 4:5:6 stagger'  },
-  stagger6:  { prfs:[800,1000,1143,1250,1333,1500],  f:9.5e9, label:'X-band 6-PRF harmonic' },
-  airborne:  { prfs:[3000,3500,4000,4500,5000,5500], f:9.5e9, label:'Airborne pulse-Doppler' },
-  maritime:  { prfs:[300,375,450,525,600,675],        f:3e9,   label:'Maritime S-band'       },
-  groundmap: { prfs:[250,300,350,400,450,500],        f:5.6e9, label:'Ground mapping C-band' },
-  lowprf:    { prfs:[150,200,250,300,350,400],        f:1.3e9, label:'Low PRF L-band'        },
-};
-
-/* ══════════════════════════════════════════════════════════════════
-   CORE MATHS
-   These three small functions contain all the radar physics.
-   ══════════════════════════════════════════════════════════════════ */
-
-/* Wavelength: λ = c / f  (in metres) */
-function wavelength(f){ return C / f; }
-
-/* "Positive modulo" — keeps the result in [0, n) even for negatives.
-   JavaScript's % operator can return negative values, which would
-   break our phase calculation. */
-function mod(a, n){ return ((a % n) + n) % n; }
-
-/* Create an evenly-spaced array of `n` numbers from `a` to `b`.
-   Equivalent to MATLAB's linspace(a, b, n). */
-function linspace(a, b, n){
-  const arr = new Float64Array(n);
-  const step = (b - a) / (n - 1);
-  for(let i = 0; i < n; i++) arr[i] = a + i * step;
-  return arr;
-}
-
-/* ── compute() ─────────────────────────────────────────────────────
-   The main computation function. Runs the blind-speed maths for
-   every PRF and returns all the data needed to draw the charts.
-
-   For each PRF it asks: "at each velocity on the axis, is this
-   target visible or blind?"
-
-   A target at velocity v is BLIND if its "phase" within the
-   unambiguous interval is close to zero:
-       phase = v mod v_ua
-       blind if  phase < halfBlind  OR  phase > v_ua − halfBlind
-
-   This models the fact that near zero-phase (= near a blind speed),
-   the clutter filter suppresses the target return.
-   ───────────────────────────────────────────────────────────────── */
-function compute(){
-  // Build the velocity axis: nPoints values from -vRange to +vRange
-  const v = linspace(-state.vRange, state.vRange, state.nPoints);
-  const lam = wavelength(state.fRadar);
-
-  // For each PRF, compute a binary visibility array (0=blind, 1=visible)
-  const rows = state.prfs.map(prf => {
-    const u  = lam * prf / 2;               // Unambiguous velocity interval
-    const hb = (state.blindFraction / 2) * u; // Half-width of the blind zone
-
-    const vis = new Float32Array(state.nPoints); // 0 or 1 for each velocity
-
-    for(let i = 0; i < state.nPoints; i++){
-      const phase = mod(v[i], u);  // Where in the [0, v_ua) interval is this velocity?
-      vis[i] = (phase < hb || phase > u - hb) ? 0 : 1;
-      //        ↑ near bottom of interval   ↑ near top (wraps around)
-      //        Both correspond to being near a blind speed
-    }
-
-    // Enumerate the exact blind speed positions for annotation on the chart
-    const nm = Math.ceil(state.vRange / u) + 1;
-    const bsp = [];
-    for(let n = -nm; n <= nm; n++){
-      const bp = n * u;
-      if(Math.abs(bp) <= state.vRange) bsp.push(bp);
-    }
-
-    // Coverage = fraction of velocity axis that is visible (mean of 0/1 array)
-    return { vis, bsp, u, cov: vis.reduce((a,b) => a+b, 0) / state.nPoints };
-  });
-
-  // Combined visibility = product across all PRFs
-  // If ANY PRF has 0 (blind) at a velocity, the product is 0
-  // This is the logical AND: a target is detectable only if ALL PRFs can see it
-  const comb = new Float32Array(state.nPoints).fill(1);
-  rows.forEach(r => { for(let i = 0; i < state.nPoints; i++) comb[i] *= r.vis[i]; });
-  const combCov = comb.reduce((a,b) => a+b, 0) / state.nPoints;
-
-  return { v, rows, comb, combCov };
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   PLOTLY CHART RENDERING
-   Plotly is a JavaScript charting library. We pass it an array of
-   "traces" (data series) and a "layout" (axis labels, colours etc).
-   Plotly.react() updates an existing chart without full re-render.
-   ══════════════════════════════════════════════════════════════════ */
-
-// Shared layout defaults applied to every chart
-const PLY = {
-  paper_bgcolor: 'transparent',       // Outer background = page background
-  plot_bgcolor:  '#faf9f6',           // Inner plot area background
-  font: { family:"'DM Mono','Courier New',monospace", color:'#1c1c1a', size:10 },
-  margin: { l:100, r:14, t:12, b:46 },
-  showlegend: true,
-  legend: { bgcolor:'#faf9f6', bordercolor:'#dddbd6', borderwidth:1, font:{size:9} },
-};
-
-// X-axis config used by visibility and frequency charts
-function axX(){ return {
-  title: { text:'Radial Velocity (m/s)', font:{size:10} },
-  gridcolor:'#e8e6e1', zerolinecolor:'#c0bdb8', zerolinewidth:1,
-  tickfont:{size:9}, linecolor:'#dddbd6',
-}; }
-
-/* ── render() ──────────────────────────────────────────────────────
-   Called every time any control changes. It reads the UI, runs
-   compute(), then redraws whichever chart tab is active.
-   ───────────────────────────────────────────────────────────────── */
-function render(){
-  readUI();           // Pull values from all HTML inputs into `state`
-  const d = compute(); // Run all the physics maths
-  renderStrip(d);     // Update the coverage % numbers at the top
-  updateHeader();     // Update the frequency / wavelength display
-  if(state.tab === 'visibility') renderVis(d);
-  else if(state.tab === 'frequency') renderFreq();
-  else renderCov(d);
-  syncVua(d.rows);    // Update the v_ua text under each PRF slider
-}
-
-/* ── renderVis() ───────────────────────────────────────────────────
-   Draws the main visibility map — one horizontal "row" per PRF
-   plus a combined row at the bottom.
-
-   Each row is drawn as two scatter traces of tiny square markers:
-   - Coloured markers = visible velocities
-   - Red markers      = blind velocities
-
-   The y-axis is divided into equal bands, one per PRF + combined.
-   We space the bands using the formula:  y = (n - i) / (n+1)
-   ───────────────────────────────────────────────────────────────── */
-function renderVis({ v, rows, comb }){
-  const n = state.prfs.length;
-  const h = 1 / (n + 1); // Height of each row band (fraction of y-axis)
-  const traces = [];
-
-  rows.forEach((r, i) => {
-    const col  = PRF_COLORS[i % 6];
-    const yTop = (n - i) * h - 0.04; // Y-position for this row's markers
-
-    // Split velocity array into visible and blind buckets
-    const visX = [], blindX = [];
-    for(let j = 0; j < v.length; j++)
-      (r.vis[j] > 0.5 ? visX : blindX).push(v[j]);
-
-    // One trace for visible, one for blind
-    traces.push({
-      x: visX, y: visX.map(() => yTop),
-      type:'scatter', mode:'markers',
-      marker:{ color:col, size:2.5, symbol:'square', opacity:0.65 },
-      name:`PRF${i+1} visible`, showlegend:i===0, legendgroup:'vis',
-      hovertemplate:`PRF${i+1}: visible · %{x:.1f} m/s<extra></extra>`,
-    });
-    traces.push({
-      x: blindX, y: blindX.map(() => yTop),
-      type:'scatter', mode:'markers',
-      marker:{ color:'#c0392b', size:2.5, symbol:'square', opacity:0.45 },
-      name:'Blind', showlegend:i===0, legendgroup:'blind',
-      hovertemplate:`PRF${i+1}: blind · %{x:.1f} m/s<extra></extra>`,
-    });
-  });
-
-  // Combined row (same logic, but using the combined array)
-  const yC = h - 0.04;
-  const cvX = [], cbX = [];
-  for(let j = 0; j < v.length; j++) (comb[j] > 0.5 ? cvX : cbX).push(v[j]);
-
-  traces.push({
-    x: cvX, y: cvX.map(() => yC),
-    type:'scatter', mode:'markers',
-    marker:{ color:'#8b6914', size:2.5, symbol:'square', opacity:0.7 },
-    name:'Combined visible', showlegend:true,
-    hovertemplate:`Combined: visible · %{x:.1f} m/s<extra></extra>`,
-  });
-  traces.push({
-    x: cbX, y: cbX.map(() => yC),
-    type:'scatter', mode:'markers',
-    marker:{ color:'#c0392b', size:2.5, symbol:'square', opacity:0.45 },
-    name:'Blind', showlegend:false, legendgroup:'blind',
-    hovertemplate:`Combined: blind · %{x:.1f} m/s<extra></extra>`,
-  });
-
-  // Y-axis tick labels: one per PRF row + "Combined" at the bottom
-  const tickVals = [], tickText = [];
-  for(let i = 0; i < n; i++){
-    tickVals.push((n - i) * h - h / 2);
-    tickText.push(`PRF${i+1}  ${state.prfs[i].toFixed(0)} Hz`);
+  // Build evenly-spaced array (like MATLAB linspace)
+  function linspace(a, b, n) {
+    const arr = new Float64Array(n), step = (b - a) / (n - 1);
+    for (let i = 0; i < n; i++) arr[i] = a + i * step;
+    return arr;
   }
-  tickVals.push(h / 2); tickText.push('Combined');
 
-  // Horizontal rules (lines) separating the rows
-  const shapes = [];
-  for(let i = 0; i <= n + 1; i++)
-    shapes.push({ type:'line', x0:0, x1:1, xref:'paper',
-                  y0:i*h, y1:i*h, yref:'paper',
-                  line:{ color:'#dddbd6', width:1 } });
+  // Core computation:
+  // For every velocity on the axis, decide if a target there is visible
+  // (1) or blind (0) for each PRF — then AND them all together.
+  function compute() {
+    const v   = linspace(-state.vRange, state.vRange, 2500);
+    const lam = C / state.f;
 
-  Plotly.react('visibility-chart', traces, {
-    ...PLY, shapes,
-    xaxis: { ...axX(), range:[-state.vRange, state.vRange] },
-    yaxis: { gridcolor:'transparent', tickmode:'array',
-             tickvals:tickVals, ticktext:tickText,
-             range:[0,1], zeroline:false, tickfont:{size:9}, showgrid:false },
-  }, { responsive:true, displayModeBar:false });
-}
+    const rows = state.prfs.map(prf => {
+      const vua = lam * prf / 2;          // Unambiguous velocity interval
+      const hb  = state.bf / 2 * vua;    // Half-width of the blind zone
 
-/* ── renderFreq() ──────────────────────────────────────────────────
-   Draws vertical lines at each blind speed position for every PRF.
-   Solid line = first blind speed (n=±1). Dotted = harmonics (n=±2,3…)
-   This lets you see at a glance whether any PRFs share blind speeds.
-   ───────────────────────────────────────────────────────────────── */
-function renderFreq(){
-  const lam = wavelength(state.fRadar);
-  const traces = [];
+      const vis = new Float32Array(v.length);
+      for (let i = 0; i < v.length; i++) {
+        const phase = mod(v[i], vua);     // Position within [0, vua)
+        vis[i] = (phase < hb || phase > vua - hb) ? 0 : 1;
+      }
 
-  state.prfs.forEach((prf, i) => {
-    const u  = lam * prf / 2;
-    const nH = Math.ceil(state.vRange / u) + 1; // Number of harmonics to draw
-    const col = PRF_COLORS[i % 6];
+      const cov = vis.reduce((a, b) => a + b, 0) / v.length;
+      return { vis, vua, cov };
+    });
 
-    for(let n = -nH; n <= nH; n++){
-      const bp = n * u; // Position of this blind speed
-      if(Math.abs(bp) > state.vRange) continue;
+    // Combined = product across all rows (0 if ANY PRF is blind at that velocity)
+    const comb = new Float32Array(v.length).fill(1);
+    rows.forEach(r => { for (let i = 0; i < v.length; i++) comb[i] *= r.vis[i]; });
 
-      traces.push({
-        x:[bp, bp], y:[0, 1], mode:'lines',
-        line:{ color: col + (n === 0 ? '' : '77'),  // Dimmer for harmonics
-               width: n === 0 ? 1.5 : 0.7,
-               dash:  n === 0 ? 'solid' : 'dot' },
-        name: n === 0 ? `PRF${i+1} = ${prf.toFixed(0)} Hz` : undefined,
-        showlegend: n === 0, legendgroup:`p${i}`,
-        hovertemplate:`PRF${i+1}: blind at ${bp.toFixed(1)} m/s<extra></extra>`,
+    return { v, rows, comb, combCov: comb.reduce((a, b) => a + b, 0) / v.length };
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────
+  // Finds contiguous runs of a given value (0 or 1) in an array.
+  // Returns [{start, end}] index pairs for each run.
+  function getRuns(vis, val) {
+    const runs = [];
+    let inRun = false, start = 0;
+    for (let i = 0; i < vis.length; i++) {
+      const match = (vis[i] > 0.5) === (val === 1);
+      if (match && !inRun) { inRun = true; start = i; }
+      else if (!match && inRun) { inRun = false; runs.push({ start, end: i - 1 }); }
+    }
+    if (inRun) runs.push({ start, end: vis.length - 1 });
+    return runs;
+  }
+
+  function render() {
+    const { v, rows, comb, combCov } = compute();
+    const n   = state.prfs.length;
+    // Use n+2 slots so PRF rows (slots 2..n+1) and Combined (slot 1) never overlap
+    const h   = 1 / (n + 2);
+    const pad = 0.025;
+
+    const shapes = [];
+    const traces = [];
+
+    function drawRuns(vis, rowBottom, rowTop, color, opacity) {
+      getRuns(vis, 1).forEach(({ start, end }) => {
+        shapes.push({
+          type: 'rect',
+          x0: v[start], x1: v[end],
+          y0: rowBottom,  y1: rowTop,
+          xref: 'x', yref: 'y',
+          fillcolor: color, opacity,
+          line: { width: 0 },
+        });
       });
     }
-  });
 
-  Plotly.react('frequency-chart', traces, {
-    ...PLY,
-    xaxis: { ...axX(), range:[-state.vRange, state.vRange] },
-    yaxis: { visible:false, range:[0, 1.1] },
-  }, { responsive:true, displayModeBar:false });
-}
+    // PRF rows: slot n+1 (top) down to slot 2
+    rows.forEach((r, i) => {
+      const col       = COLORS[i % COLORS.length];
+      const slotTop   = n + 1 - i;   // slot index from bottom (1-based)
+      const rowTop    = slotTop * h - pad;
+      const rowBottom = (slotTop - 1) * h + pad;
 
-/* ── renderCov() ───────────────────────────────────────────────────
-   Simple horizontal bar chart showing coverage % per PRF and combined.
-   ───────────────────────────────────────────────────────────────── */
-function renderCov({ rows, combCov }){
-  const labels = [...state.prfs.map((p,i) => `PRF${i+1}  ${p.toFixed(0)} Hz`), 'Combined'];
-  const vals   = [...rows.map(r => r.cov * 100), combCov * 100];
-  const cols   = [...PRF_COLORS.slice(0, state.prfs.length), '#8b6914'];
+      drawRuns(r.vis,               rowBottom, rowTop, col,       0.55);
+      drawRuns(r.vis.map(x=>1-x),   rowBottom, rowTop, '#b83228', 0.45);
 
-  Plotly.react('coverage-chart', [{
-    type:'bar', x:labels, y:vals,
-    marker:{ color:cols.map(c => c+'33'), line:{ color:cols, width:1.5 } },
-    text: vals.map(v => `${v.toFixed(1)}%`), textposition:'outside',
-    textfont:{ size:10, color:'#1c1c1a' },
-    hovertemplate:'%{x}<br>%{y:.1f}%<extra></extra>',
-  }],{
-    ...PLY,
-    xaxis:{ tickfont:{size:9}, gridcolor:'#e8e6e1', linecolor:'#dddbd6' },
-    yaxis:{ title:{text:'Coverage (%)'}, range:[0,110],
-            gridcolor:'#e8e6e1', tickfont:{size:9} },
-  },{ responsive:true, displayModeBar:false });
-}
+      traces.push({
+        x: Array.from(v),
+        y: Array.from(v).map(() => (rowTop + rowBottom) / 2),
+        type: 'scatter', mode: 'lines',
+        line: { width: 8, color: 'rgba(0,0,0,0)' },
+        showlegend: false,
+        hovertemplate:
+          `<b>PRF${i+1}</b>  ${state.prfs[i].toFixed(0)} Hz<br>` +
+          `v = %{x:.1f} m/s  ·  v_ua = ${r.vua.toFixed(1)} m/s<extra></extra>`,
+      });
+    });
 
-/* ── renderStrip() ─────────────────────────────────────────────────
-   Updates the coverage % cells at the very top of the chart area.
-   Dynamically builds HTML from the computed data.
-   ───────────────────────────────────────────────────────────────── */
-function renderStrip({ rows, combCov }){
-  const el = document.getElementById('cov-strip');
-  let h = rows.map((r, i) => {
-    const col = PRF_COLORS[i % 6];
-    const pct = (r.cov * 100).toFixed(0);
-    return `<div class="cov-cell">
-      <div class="cov-label" style="color:${col}">PRF ${i+1}</div>
-      <div class="cov-value">${pct}<span style="font-family:var(--sans);font-size:11px;color:var(--dim)">%</span></div>
-      <div class="cov-bar-track"><div class="cov-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-    </div>`;
-  }).join('');
+    // Combined row: slot 1 (bottom, separate from all PRF rows)
+    {
+      const rowTop    = h - pad;
+      const rowBottom = pad;
 
-  const cp = (combCov * 100).toFixed(1);
-  h += `<div class="cov-cell">
-    <div class="cov-label">Combined</div>
-    <div class="cov-value">${cp}<span style="font-family:var(--sans);font-size:11px;color:var(--dim)">%</span></div>
-    <div class="cov-bar-track"><div class="cov-bar-fill" style="width:${cp}%"></div></div>
-  </div>`;
-  el.innerHTML = h;
-}
+      drawRuns(comb,             rowBottom, rowTop, '#8b6914', 0.60);
+      drawRuns(comb.map(x=>1-x), rowBottom, rowTop, '#b83228', 0.45);
 
-/* ── updateHeader() ────────────────────────────────────────────────
-   Keeps the top-right frequency / wavelength display in sync.
-   ───────────────────────────────────────────────────────────────── */
-function updateHeader(){
-  const l = wavelength(state.fRadar);
-  document.getElementById('hdr-freq').textContent   = `${(state.fRadar/1e9).toFixed(2)} GHz`;
-  document.getElementById('hdr-lambda').textContent = `λ = ${(l*100).toFixed(2)} cm`;
-}
+      traces.push({
+        x: Array.from(v),
+        y: Array.from(v).map(() => (rowTop + rowBottom) / 2),
+        type: 'scatter', mode: 'lines',
+        line: { width: 8, color: 'rgba(0,0,0,0)' },
+        showlegend: false,
+        hovertemplate:
+          `<b>Combined</b><br>v = %{x:.1f} m/s<br>` +
+          `Coverage: ${(combCov * 100).toFixed(1)}%<extra></extra>`,
+      });
+    }
 
-/* ── buildSidebar() ────────────────────────────────────────────────
-   Generates the PRF slider HTML from scratch. Called on load and
-   whenever a preset is loaded (which may change the number of PRFs).
-   ───────────────────────────────────────────────────────────────── */
-function buildSidebar(){
-  document.getElementById('prf-controls').innerHTML =
-    state.prfs.map((prf, i) => {
-      const col = PRF_COLORS[i % 6];
-      const u   = wavelength(state.fRadar) * prf / 2;
-      return `<div class="prf-item">
-        <div class="prf-header">
-          <span class="prf-name" style="color:${col}">PRF ${i+1}</span>
-          <span class="prf-val" id="pd-${i}">${prf.toFixed(0)} Hz</span>
+    // Divider lines — one per slot boundary
+    for (let i = 0; i <= n + 2; i++)
+      shapes.push({ type: 'line', x0:0, x1:1, xref:'paper',
+                    y0: i*h, y1: i*h, yref:'paper',
+                    line:{ color:'#e0ddd7', width:1 } });
+
+    // Y-axis labels
+    const tickVals = [], tickText = [];
+    for (let i = 0; i < n; i++) {
+      const slotTop = n + 1 - i;
+      tickVals.push((slotTop - 0.5) * h);
+      tickText.push(`PRF${i+1}  ${state.prfs[i].toFixed(0)} Hz  (${(rows[i].cov*100).toFixed(0)}%)`);
+    }
+    tickVals.push(0.5 * h);
+    tickText.push(`Combined  (${(combCov*100).toFixed(1)}%)`);
+
+    Plotly.react('chart', traces, {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor:  '#ffffff',
+      font: { family:"'DM Mono',monospace", color:'#1a1a18', size:10 },
+      margin: { l:170, r:16, t:16, b:46 },
+      showlegend: false,
+      shapes,
+      xaxis: {
+        title: { text:'Radial Velocity (m/s)', font:{size:11} },
+        range: [-state.vRange, state.vRange],
+        gridcolor: '#eeece8', zerolinecolor:'#ccc9c3',
+        tickfont:{size:9}, linecolor:'#e0ddd7',
+      },
+      yaxis: {
+        tickmode:'array', tickvals:tickVals, ticktext:tickText,
+        range:[0,1], zeroline:false, showgrid:false, tickfont:{size:9},
+      },
+    }, { responsive:true, displayModeBar:false });
+
+    // Update header info
+    const lam = C / state.f;
+    document.getElementById('hdr-info').textContent =
+      `f = ${(state.f/1e9).toFixed(2)} GHz · λ = ${(lam*100).toFixed(2)} cm`;
+
+    // Update v_ua labels under sliders
+    rows.forEach((r, i) => {
+      const el = document.getElementById(`vua-${i}`);
+      if (el) el.textContent = `v_ua = ${r.vua.toFixed(1)} m/s`;
+    });
+  }
+
+  // ── Build PRF slider rows ───────────────────────────────────────────
+  // ALL_PRFS holds default values for up to 6 PRFs. When the user
+  // reduces the count, the extras are hidden but their values are remembered.
+  const ALL_PRFS = [1000, 1250, 1500, 1750, 2000, 2500];
+
+  function buildPrfRows() {
+    const count = state.prfs.length;
+    document.getElementById('prf-rows').innerHTML = ALL_PRFS.slice(0, 6).map((defaultPrf, i) => {
+      const prf = state.prfs[i] !== undefined ? state.prfs[i] : defaultPrf;
+      const col = COLORS[i % COLORS.length];
+      const hidden = i >= count ? 'style="display:none"' : '';
+      return `
+        <div class="prf-row" id="prf-row-${i}" ${hidden}>
+          <span class="prf-tag" style="color:${col}">PRF ${i+1}</span>
+          <input type="range" id="ps-${i}" min="200" max="8000" step="25" value="${prf}"
+       oninput="onPrfSlider(${i}, this.value)" />
+
+        <input type="number" id="pi-${i}" min="200" max="8000" step="25"
+       value="${prf}" style="width:70px"
+       oninput="onPrfInput(${i}, this.value)" />
         </div>
-        <input type="range" min="100" max="10000" step="25" value="${prf}"
-               oninput="onSlide(${i}, this.value)"
-               onchange="render()"
-               id="ps-${i}" />
-        <div class="prf-vua" id="pv-${i}">v_ua = ${u.toFixed(1)} m/s</div>
-      </div>`;
+        <div id="vua-${i}" ${hidden}
+             style="font-size:9px;color:var(--dim);margin-bottom:8px;padding-left:70px"
+             >v_ua = — m/s</div>`;
     }).join('');
+
+    // Sync state.prfs to current count
+    state.prfs = ALL_PRFS.slice(0, count).map((def, i) => {
+      const slider = document.getElementById(`ps-${i}`);
+      return slider ? parseFloat(slider.value) : def;
+    });
+  }
+
+  function onPrfSlider(i, val) {
+  const v = parseFloat(val);
+  state.prfs[i] = v;
+
+  const input = document.getElementById(`pi-${i}`);
+  if (input) input.value = v;
+
+  clearTimeout(window._t);
+  window._t = setTimeout(render, 60);
 }
 
-/* ── syncVua() ─────────────────────────────────────────────────────
-   After each render, updates the small "v_ua = X m/s · Y%" text
-   shown under each PRF slider with freshly computed values.
-   ───────────────────────────────────────────────────────────────── */
-function syncVua(rows){
-  rows.forEach((r, i) => {
-    const el = document.getElementById(`pv-${i}`);
-    if(el) el.textContent = `v_ua = ${r.u.toFixed(1)} m/s  ·  ${(r.cov*100).toFixed(0)}%`;
+function onPrfInput(i, val) {
+  const v = parseFloat(val);
+  if (isNaN(v)) return;
+
+  state.prfs[i] = v;
+
+  const slider = document.getElementById(`ps-${i}`);
+  if (slider) slider.value = v;
+
+  clearTimeout(window._t);
+  window._t = setTimeout(render, 60);
+}
+
+  // ── Event listeners ──────────────────────────────────────────────
+  document.getElementById('prf-count').addEventListener('change', function () {
+    const count = parseInt(this.value);
+    // Show/hide slider rows without losing their values
+    for (let i = 0; i < 6; i++) {
+      const rowEl = document.getElementById(`prf-row-${i}`);
+      const vuaEl = document.getElementById(`vua-${i}`);
+      const show  = i < count;
+      if (rowEl) rowEl.style.display = show ? '' : 'none';
+      if (vuaEl) vuaEl.style.display = show ? '' : 'none';
+    }
+    // Rebuild state.prfs from visible sliders
+    state.prfs = [];
+    for (let i = 0; i < count; i++) {
+      const slider = document.querySelector(`#prf-row-${i} input[type=range]`);
+      state.prfs.push(slider ? parseFloat(slider.value) : ALL_PRFS[i]);
+    }
+    render();
   });
-}
-
-/* ── onSlide() ─────────────────────────────────────────────────────
-   Fires every time a PRF slider thumb moves. Updates the displayed
-   Hz value immediately (no lag), then debounces the full render
-   so the chart doesn't recompute on every pixel of drag.
-   ───────────────────────────────────────────────────────────────── */
-function onSlide(i, val){
-  state.prfs[i] = parseFloat(val);
-  const el = document.getElementById(`pd-${i}`);
-  if(el) el.textContent = `${val} Hz`;
-  clearTimeout(window._sd);
-  window._sd = setTimeout(render, 60); // 60ms debounce
-}
-
-/* ── readUI() ──────────────────────────────────────────────────────
-   Reads all HTML inputs and updates `state`. Called at the start
-   of every render() so the computation always uses the latest values.
-   ───────────────────────────────────────────────────────────────── */
-function readUI(){
-  state.fRadar        = parseFloat(document.getElementById('freq-input').value) * 1e9;
-  state.vRange        = parseFloat(document.getElementById('vrange-input').value);
-  state.blindFraction = parseInt(document.getElementById('bf-slider').value) / 100;
-  state.prfs = state.prfs.map((_, i) => {
-    const s = document.getElementById(`ps-${i}`);
-    return s ? parseFloat(s.value) : state.prfs[i];
-  });
-}
-
-/* ── loadPreset() ──────────────────────────────────────────────────
-   Loads a named preset: updates state, resets the HTML inputs,
-   rebuilds the PRF sliders (in case the number of PRFs changed),
-   then triggers a full render.
-   ───────────────────────────────────────────────────────────────── */
-function loadPreset(k){
-  const p = PRESETS[k]; if(!p) return;
-  state.prfs   = [...p.prfs];
-  state.fRadar = p.f;
-  document.getElementById('freq-input').value = (p.f / 1e9).toFixed(2);
-  const bs = document.getElementById('band-select');
-  for(const o of bs.options)
-    if(Math.abs(parseFloat(o.value) - p.f/1e9) < 0.5){ bs.value = o.value; break; }
-  buildSidebar();
-  render();
-  toast(`${p.label}`);
-}
-
-/* ── switchTab() ───────────────────────────────────────────────────
-   Shows the selected chart div and hides the others.
-   Adds/removes the CSS "active" class on the tab buttons.
-   ───────────────────────────────────────────────────────────────── */
-function switchTab(tab, btn){
-  state.tab = tab;
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  ['visibility','frequency','coverage'].forEach(t => {
-    document.getElementById(`${t}-chart`).classList.toggle('chart-hidden', t !== tab);
-  });
-  // Hide the legend under non-visibility tabs
-  document.getElementById('chart-guide').style.display =
-    tab === 'visibility' ? 'flex' : 'none';
-  render();
-}
-
-/* ── toggleExplainer() ─────────────────────────────────────────────
-   Toggles the full explainer panel below the chart.
-   ───────────────────────────────────────────────────────────────── */
-function toggleExplainer(){
-  const panel = document.getElementById('explainer');
-  const btn   = document.getElementById('info-toggle-btn');
-  const open  = panel.classList.toggle('open');
-  btn.classList.toggle('active', open);
-  btn.textContent = open ? '↑ Close' : '? How to read this';
-  if(open) panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-
-/* ── toggleTip() ───────────────────────────────────────────────────
-   Toggles one of the inline ⓘ tooltip boxes in the sidebar.
-   ───────────────────────────────────────────────────────────────── */
-function toggleTip(id){
-  const el = document.getElementById(id);
-  el.classList.toggle('open');
-}
-
-/* ── exportCSV() ───────────────────────────────────────────────────
-   Runs a final compute(), formats the full visibility matrix as CSV,
-   then triggers a file download via a temporary <a> element.
-   Columns: velocity, PRF1_vis, PRF2_vis, …, combined
-   Values: 1 = visible, 0 = blind
-   ───────────────────────────────────────────────────────────────── */
-function exportCSV(){
-  readUI();
-  const { v, rows, comb } = compute();
-  let csv = 'velocity_ms,' +
-    state.prfs.map((p,i) => `PRF${i+1}_${p.toFixed(0)}Hz`).join(',') +
-    ',combined\n';
-  for(let j = 0; j < v.length; j++)
-    csv += v[j].toFixed(3) + ',' + rows.map(r => r.vis[j]).join(',') + ',' + comb[j] + '\n';
-
-  const a = document.createElement('a');
-  a.href     = URL.createObjectURL(new Blob([csv], { type:'text/csv' }));
-  a.download = `doppler_vis_${(state.fRadar/1e9).toFixed(1)}GHz.csv`;
-  a.click();
-  toast('CSV exported');
-}
-
-/* ── toast() ───────────────────────────────────────────────────────
-   Shows a small notification at the bottom-right for 2 seconds.
-   ───────────────────────────────────────────────────────────────── */
-function toast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
-}
-
-/* ── Event listeners ───────────────────────────────────────────────
-   Wired up after DOMContentLoaded so all HTML elements exist.
-   Each input gets a listener that updates state and triggers render.
-   Frequency and velocity range use a debounce so rapid typing
-   doesn't cause the chart to redraw on every keystroke.
-   ───────────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-
-  // Band select dropdown → set frequency input and re-render
-  document.getElementById('band-select').addEventListener('change', function(){
-    state.fRadar = parseFloat(this.value) * 1e9;
-    document.getElementById('freq-input').value = parseFloat(this.value).toFixed(2);
+  document.getElementById('band-select').addEventListener('change', function () {
+    state.f = parseFloat(this.value) * 1e9;
     render();
   });
 
-  // Manual frequency typing → debounced render (200ms)
-  document.getElementById('freq-input').addEventListener('input', function(){
-    const f = parseFloat(this.value);
-    if(f > 0){
-      state.fRadar = f * 1e9;
-      clearTimeout(window._fd);
-      window._fd = setTimeout(render, 200);
-    }
+  document.getElementById('vrange').addEventListener('input', function () {
+    state.vRange = parseFloat(this.value) || 500;
+    clearTimeout(window._tv);
+    window._tv = setTimeout(render, 200);
   });
 
-  // Velocity range input → debounced render
-  document.getElementById('vrange-input').addEventListener('input', () => {
-    clearTimeout(window._vd);
-    window._vd = setTimeout(render, 200);
+  document.getElementById('bf').addEventListener('input', function () {
+    state.bf = parseInt(this.value) / 100;
+    document.getElementById('bfval').textContent = `${this.value}%`;
+    clearTimeout(window._tb);
+    window._tb = setTimeout(render, 80);
   });
 
-  // Blind fraction slider → instant label update + debounced render
-  document.getElementById('bf-slider').addEventListener('input', function(){
-    document.getElementById('bf-display').textContent = `${this.value}%`;
-    clearTimeout(window._bd);
-    window._bd = setTimeout(render, 80);
-  });
-
-  // Build the PRF sliders, then do the first render
-  buildSidebar();
+  // ── Init ─────────────────────────────────────────────────────────
+  buildPrfRows();
   render();
-});
 </script>
 </body>
 </html>
