@@ -383,16 +383,137 @@
     .sidebar::-webkit-scrollbar-track { background: transparent; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--rule); }
 
-    @media (max-width: 700px) {
-      .layout { grid-template-columns: 1fr; }
+    /* ── Mobile collapsible controls panel ── */
+    .sidebar-toggle {
+      display: none;
+      width: 100%;
+      background: var(--surface);
+      border: none;
+      border-bottom: 1px solid var(--rule);
+      padding: 13px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--mid);
+      cursor: pointer;
+      text-align: left;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-toggle-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-toggle-arrow {
+      font-size: 10px;
+      transition: transform 0.22s ease;
+      display: inline-block;
+    }
+
+    .sidebar-toggle-arrow.open { transform: rotate(180deg); }
+
+    @media (max-width: 680px) {
+
+      /* Topbar */
+      .topbar {
+        padding: 12px 16px;
+        position: sticky;
+        top: 0;
+        align-items: center;
+      }
+
+      h1 { font-size: 18px; }
+
+      /* Hide subtitle on very small screens to save space */
+      .subtitle { display: none; }
+
+      /* Layout: single column */
+      .layout {
+        grid-template-columns: 1fr;
+        min-height: unset;
+      }
+
+      /* Sidebar: collapsible panel, not sticky */
       .sidebar {
         position: relative;
         top: 0;
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--rule);
+        padding: 0;
+        overflow: visible;
       }
-      .topbar { position: relative; }
+
+      /* The controls inside the sidebar collapse */
+      .sidebar-inner {
+        display: none;
+        padding: 16px 16px 24px;
+      }
+
+      .sidebar-inner.open { display: block; }
+
+      /* Show the toggle button on mobile */
+      .sidebar-toggle { display: block; }
+
+      /* Main content */
+      .main {
+        padding: 14px 12px 40px;
+      }
+
+      /* Chart: smaller left margin so y-axis labels fit */
+      #chart { overflow: hidden; }
+
+      /* Legend: wrap tightly */
+      .legend {
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      /* Explainer heading smaller */
+      .exp-heading { font-size: 14px; }
+      .exp-count { display: none; }
+
+      /* Explainer grid single column */
+      .exp-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      /* PRF inputs: slider full width, number input below */
+      .prf-inputs {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .prf-inputs input[type="number"] {
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      /* Velocity range row */
+      .field-row {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      input[type="number"] {
+        width: 80px;
+      }
+
+      /* Sliders: bigger touch target */
+      input[type="range"] { height: 3px; }
+      input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
+      input[type="range"]::-moz-range-thumb     { width: 18px; height: 18px; }
+
+      /* PRF count row */
+      .prf-count-row { flex-wrap: wrap; gap: 8px; }
+
+      /* Theme label: hide text, show icon only */
+      #theme-label { display: none; }
+      .theme-btn { padding: 6px 9px; }
     }
   </style>
 </head>
@@ -404,7 +525,7 @@
     <div style="font-size:10px;color:var(--dim);margin-top:2px">
       by shermaine ang
     </div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">
         <span class="theme-icon" id="theme-icon">☽</span>
@@ -417,6 +538,13 @@
 
     <!-- ── Sidebar controls ── -->
     <aside class="sidebar">
+      <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">
+        <div class="sidebar-toggle-inner">
+          <span>⚙ Controls</span>
+          <span class="sidebar-toggle-arrow" id="sidebar-arrow">▼</span>
+        </div>
+      </button>
+      <div class="sidebar-inner" id="sidebar-inner">
 
       <!-- Radar -->
       <div class="ctrl-section">
@@ -473,6 +601,7 @@
         <div id="prf-rows"></div>
       </div>
 
+      </div><!-- /sidebar-inner -->
     </aside>
 
     <!-- ── Main content ── -->
@@ -501,7 +630,7 @@
       <div class="explainer">
         <div class="exp-toggle" id="exp-toggle" onclick="toggleExplainer()">
           <div class="exp-toggle-left">
-            <span class="exp-heading">Understanding the Doppler Visibility Map</span>
+            <span class="exp-heading">understanding the doppler visibility map</span>
             <span class="exp-count">8 sections</span>
           </div>
           <span class="exp-arrow" id="exp-arrow">▼</span>
@@ -748,11 +877,14 @@
     const fontCol  = dark ? '#e8e6e0' : '#1a1a18';
     const ruleCol  = dark ? '#2e2d2a' : '#e0ddd7';
 
+    const isMobile = window.innerWidth <= 680;
+    const leftMargin = isMobile ? 120 : 180;
+
     Plotly.react('chart', traces, {
       paper_bgcolor: 'transparent',
       plot_bgcolor:  plotBg,
-      font: { family:"'DM Mono',monospace", color: fontCol, size:10 },
-      margin: { l:180, r:16, t:16, b:46 },
+      font: { family:"'DM Mono',monospace", color: fontCol, size: isMobile ? 8 : 10 },
+      margin: { l: leftMargin, r:16, t:16, b:46 },
       showlegend: false,
       height: chartHeight,
       shapes: shapes.map(s => s.type === 'line' ? { ...s, line: { ...s.line, color: ruleCol } } : s),
@@ -871,6 +1003,14 @@
     window._tb = setTimeout(render, 80);
   });
 
+  // ── Sidebar toggle (mobile) ───────────────────────────────────────
+  function toggleSidebar() {
+    const inner = document.getElementById('sidebar-inner');
+    const arrow = document.getElementById('sidebar-arrow');
+    const open  = inner.classList.toggle('open');
+    arrow.classList.toggle('open', open);
+  }
+
   // ── Theme toggle ─────────────────────────────────────────────────
   function toggleTheme() {
     const html  = document.documentElement;
@@ -884,6 +1024,12 @@
   // ── Init ─────────────────────────────────────────────────────────
   buildPrfRows();
   render();
+
+  // Re-render on resize/orientation change so margins stay correct
+  window.addEventListener('resize', () => {
+    clearTimeout(window._tr);
+    window._tr = setTimeout(render, 150);
+  });
 </script>
 </body>
 </html>
