@@ -376,6 +376,17 @@
     /* dark mode select arrow override */
     [data-theme="dark"] select {
       background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239b9994' stroke-width='1.2'/%3E%3C/svg%3E");
+      background-color: #1c1c1a;
+    }
+
+    select option {
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    [data-theme="dark"] select option {
+      background: #1c1c1a;
+      color: #e8e6e0;
     }
 
     /* Scrollbar styling for sidebar */
@@ -522,10 +533,11 @@
   <!-- Top bar -->
   <div class="topbar">
     <h1>doppler visibility map</h1>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <div style="font-size:10px;color:var(--dim);margin-top:2px">
       by shermaine ang
     </div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+
       <span class="subtitle" id="hdr-info">f = 9.50 GHz · λ = 3.16 cm</span>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">
         <span class="theme-icon" id="theme-icon">☽</span>
@@ -617,7 +629,7 @@
       <div class="explainer">
         <div class="exp-toggle" id="exp-toggle" onclick="toggleExplainer()">
           <div class="exp-toggle-left">
-            <span class="exp-heading">understanding the doppler visibility map</span>
+            <span class="exp-heading">Understanding the Doppler Visibility Map</span>
             <span class="exp-count">8 sections</span>
           </div>
           <span class="exp-arrow" id="exp-arrow">▼</span>
@@ -931,9 +943,9 @@
             <span class="prf-tag" style="color:${col}">PRF ${i+1}</span>
           </div>
           <div class="prf-inputs">
-            <input type="range" id="ps-${i}" min="200" max="8000" step="25" value="${prf}"
+            <input type="range" id="ps-${i}" min="200" max="50000" step="50" value="${prf}"
                    oninput="onPrfSlider(${i}, this.value)" />
-            <input type="number" id="pi-${i}" min="200" max="8000" step="25" value="${prf}"
+            <input type="number" id="pi-${i}" min="200" max="50000" step="50" value="${prf}"
                    oninput="onPrfInput(${i}, this.value)" />
           </div>
           <div class="vua-label" id="vua-${i}">v_ua = — m/s</div>
@@ -961,8 +973,7 @@
     state.prfs[i] = v;
     const slider = document.getElementById(`ps-${i}`);
     if (slider) slider.value = v;
-    clearTimeout(window._t);
-    window._t = setTimeout(render, 60);
+    render();
   }
 
   // ── Explainer toggle ─────────────────────────────────────────────
