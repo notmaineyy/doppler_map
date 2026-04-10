@@ -12,8 +12,19 @@ Physics Background
 For a pulsed Doppler radar:
   - Wavelength:        λ = c / f_radar
   - Unambiguous vel:   v_ua = λ × PRF / 2
+  - Unambiguous range: R_ua = c / (2 × PRF)
   - Blind speeds occur at integer multiples of v_ua:
         v_blind,n = n × (λ × PRF / 2),  n = ±1, ±2, ...
+
+The fundamental PRF trade-off:
+  - R_ua × v_ua = c × λ / 4   (constant for a given radar)
+  - Higher PRF  → larger v_ua (better velocity) but smaller R_ua (worse range)
+  - Lower PRF   → larger R_ua (better range) but smaller v_ua (worse velocity)
+
+PRF regimes:
+  - Low PRF:    unambiguous in range, ambiguous in velocity
+  - Medium PRF: ambiguous in both range and velocity
+  - High PRF:   unambiguous in velocity, ambiguous in range
 
 A target is "blind" if its radial velocity falls within a narrow window
 around any blind speed. That window is defined by `blind_fraction` — a
@@ -71,6 +82,10 @@ class VisibilityResult:
         Radar wavelength (m).
     unambiguous_velocities : List[float]
         Unambiguous velocity interval for each PRF (m/s).
+    unambiguous_ranges : List[float]
+        Unambiguous range for each PRF (m).
+    prf_regimes : List[str]
+        PRF regime classification for each PRF ('Low', 'Medium', 'High').
     coverage_per_prf : List[float]
         Fraction of velocity space that is visible, per PRF.
     combined_coverage : float
@@ -83,6 +98,8 @@ class VisibilityResult:
     prfs: List[float]
     wavelength: float
     unambiguous_velocities: List[float]
+    unambiguous_ranges: List[float]
+    prf_regimes: List[str]
     coverage_per_prf: List[float]
     combined_coverage: float
 
@@ -127,8 +144,30 @@ class DopplerVisibility:
     # ------------------------------------------------------------------
 
     def _unambiguous_velocity(self, prf: float) -> float:
-        """First blind speed = half the unambiguous velocity interval."""
+        """Unambiguous velocity interval: v_ua = λ × PRF / 2."""
         return self.wavelength * prf / 2.0
+
+    def _unambiguous_range(self, prf: float) -> float:
+        """Unambiguous range: R_ua = c / (2 × PRF)."""
+        return C_LIGHT / (2.0 * prf)
+
+    def _prf_regime(self, prf: float) -> str:
+        """
+        Classify PRF regime based on v_ua and R_ua relative to typical
+        operational thresholds.
+
+        Low PRF:    R_ua > 75 km  (long-range surveillance, ground mapping)
+        High PRF:   v_ua > 500 m/s (air-to-air, velocity-priority modes)
+        Medium PRF: everything in between (ambiguous in both)
+        """
+        v_ua = self._unambiguous_velocity(prf)
+        r_ua = self._unambiguous_range(prf)
+        if r_ua > 75_000:   # > 75 km → prioritises range
+            return 'Low'
+        elif v_ua > 500:    # > 500 m/s → prioritises velocity
+            return 'High'
+        else:
+            return 'Medium'
 
     def _visibility_for_prf(self, prf: float, velocities: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -176,6 +215,8 @@ class DopplerVisibility:
         visibility_per_prf = []
         blind_speeds = []
         unambiguous_velocities = []
+        unambiguous_ranges = []
+        prf_regimes = []
         coverage_per_prf = []
 
         for prf in self.prfs:
@@ -183,6 +224,8 @@ class DopplerVisibility:
             visibility_per_prf.append(vis)
             blind_speeds.append(bsp)
             unambiguous_velocities.append(self._unambiguous_velocity(prf))
+            unambiguous_ranges.append(self._unambiguous_range(prf))
+            prf_regimes.append(self._prf_regime(prf))
             coverage_per_prf.append(float(np.mean(vis)))
 
         visibility_matrix = np.array(visibility_per_prf)  # (n_prfs, N)
@@ -197,6 +240,8 @@ class DopplerVisibility:
             prfs=self.prfs,
             wavelength=self.wavelength,
             unambiguous_velocities=unambiguous_velocities,
+            unambiguous_ranges=unambiguous_ranges,
+            prf_regimes=prf_regimes,
             coverage_per_prf=coverage_per_prf,
             combined_coverage=combined_coverage,
         )
@@ -216,17 +261,19 @@ class DopplerVisibility:
             f"  Velocity range   : {self.v_range[0]} to {self.v_range[1]} m/s",
             f"  Blind zone width : {self.blind_fraction * 100:.1f}% of v_ua",
             "",
-            f"  {'PRF (Hz)':>12}  {'v_ua (m/s)':>12}  {'Coverage':>10}",
-            "  " + "-" * 40,
+            f"  {'PRF (Hz)':>12}  {'v_ua (m/s)':>12}  {'R_ua (km)':>12}  {'Regime':>8}  {'Coverage':>10}",
+            "  " + "-" * 62,
         ]
         for i, prf in enumerate(result.prfs):
             lines.append(
                 f"  {prf:>12.0f}  {result.unambiguous_velocities[i]:>12.2f}  "
+                f"{result.unambiguous_ranges[i] / 1000:>12.2f}  "
+                f"{result.prf_regimes[i]:>8}  "
                 f"{result.coverage_per_prf[i] * 100:>9.1f}%"
             )
         lines += [
-            "  " + "-" * 40,
-            f"  {'COMBINED':>12}  {'':>12}  {result.combined_coverage * 100:>9.1f}%",
+            "  " + "-" * 62,
+            f"  {'COMBINED':>12}  {'':>12}  {'':>12}  {'':>8}  {result.combined_coverage * 100:>9.1f}%",
             "=" * 60,
         ]
         return "\n".join(lines)

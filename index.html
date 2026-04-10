@@ -215,7 +215,52 @@
       font-size: 9px;
       color: var(--dim);
       margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    .rua-label {
+      font-size: 9px;
+      color: var(--dim);
+      margin-bottom: 2px;
+    }
+
+    .regime-badge {
+      display: inline-block;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-weight: 500;
       margin-bottom: 8px;
+    }
+    .regime-low    { background: #e0f2fe; color: #0369a1; }
+    .regime-medium { background: #fef3c7; color: #92400e; }
+    .regime-high   { background: #fce7f3; color: #9d174d; }
+    [data-theme="dark"] .regime-low    { background: #0c4a6e; color: #7dd3fc; }
+    [data-theme="dark"] .regime-medium { background: #451a03; color: #fcd34d; }
+    [data-theme="dark"] .regime-high   { background: #500724; color: #f9a8d4; }
+
+    .target-input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .tradeoff-wrap {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      padding: 4px 4px 0;
+      margin-bottom: 8px;
+    }
+
+    .section-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 12px;
     }
 
     .prf-count-row {
@@ -617,6 +662,26 @@
         <div id="prf-rows"></div>
       </div>
 
+      <!-- Target Scenario -->
+      <div class="ctrl-section">
+        <div class="ctrl-label">Target Scenario</div>
+        <div class="target-input-row">
+          <span class="field-name">Max velocity</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="target-vel" value="300" min="1" max="5000" step="10" />
+            <span style="color:var(--dim);font-size:11px">m/s</span>
+          </div>
+        </div>
+        <div class="target-input-row">
+          <span class="field-name">Max range</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="target-range" value="150" min="1" max="1000" step="5" />
+            <span style="color:var(--dim);font-size:11px">km</span>
+          </div>
+        </div>
+        <div id="scenario-advice" style="font-size:9px;color:var(--dim);line-height:1.6;margin-top:6px"></div>
+      </div>
+
       </div><!-- /sidebar-inner -->
     </aside>
 
@@ -629,12 +694,20 @@
 
       <div class="legend" id="legend"></div>
 
+      <!-- Range-Velocity Trade-off Chart -->
+      <div class="section-heading" style="margin-top:8px">range–velocity trade-off</div>
+      <div class="tradeoff-wrap">
+        <div id="tradeoff-chart"></div>
+      </div>
+      <div id="tradeoff-legend" style="font-size:10px;color:var(--mid);line-height:1.7;margin-bottom:32px;padding:0 2px">
+      </div>
+
       <!-- Collapsible explainer -->
       <div class="explainer">
         <div class="exp-toggle" id="exp-toggle" onclick="toggleExplainer()">
           <div class="exp-toggle-left">
             <span class="exp-heading">understanding the doppler visibility map</span>
-            <span class="exp-count">8 sections</span>
+            <span class="exp-count">12 sections</span>
           </div>
           <span class="exp-arrow" id="exp-arrow">▼</span>
         </div>
@@ -735,6 +808,87 @@
               </div>
             </div>
 
+            <div class="exp-block">
+              <div class="exp-title">Step 9 — Unambiguous range (R_ua)</div>
+              <div class="exp-text">
+                So far we've only looked at velocity. But a pulsed radar also measures
+                <strong>range</strong> by timing the echo. The maximum unambiguous range is:
+                <div class="formula">R_ua = c / (2 × PRF)</div>
+                A higher PRF means pulses are spaced closer together in time. If a
+                target is far away, its echo arrives <em>after</em> the next pulse has
+                already been sent — the radar can't tell which pulse the echo belongs to.
+                This creates <strong>range ambiguity</strong>.<br><br>
+                For X-band at PRF = 1000 Hz:
+                <div class="formula">R_ua = 3×10⁸ / (2 × 1000) = 150 km</div>
+                At PRF = 10,000 Hz:
+                <div class="formula">R_ua = 3×10⁸ / (2 × 10000) = 15 km</div>
+              </div>
+            </div>
+
+            <div class="exp-block">
+              <div class="exp-title">Step 10 — The fundamental trade-off: R_ua vs v_ua</div>
+              <div class="exp-text">
+                This is the single most important concept in pulsed Doppler radar design.
+                For any given radar frequency:
+                <div class="formula">
+                  R_ua × v_ua = c × λ / 4 = constant
+                </div>
+                <strong>You cannot improve range AND velocity simultaneously by changing PRF.</strong>
+                The trade-off chart above shows this — every PRF sits on the same
+                hyperbola. Moving along the curve means trading range for velocity
+                or vice versa.<br><br>
+                — <strong>Increase PRF</strong> → v_ua goes up (better velocity) but R_ua goes down (worse range).<br>
+                — <strong>Decrease PRF</strong> → R_ua goes up (better range) but v_ua goes down (worse velocity).
+              </div>
+            </div>
+
+            <div class="exp-block">
+              <div class="exp-title">Step 11 — PRF regimes: Low, Medium, High</div>
+              <div class="exp-text">
+                Radar engineers classify PRFs into three regimes based on which ambiguity
+                they accept:<br><br>
+                <strong style="color:#0369a1">Low PRF</strong> — unambiguous in range, ambiguous in velocity.<br>
+                R_ua is large enough for the operational range, but v_ua is small →
+                many blind speeds. Best for: <em>long-range surveillance, ground mapping,
+                weather radar, maritime search</em>. You care about WHERE the target is,
+                not how fast it moves.<br><br>
+                <strong style="color:#92400e">Medium PRF</strong> — ambiguous in BOTH range and velocity.<br>
+                A deliberate compromise. Neither R_ua nor v_ua fully covers the
+                operational requirement, but by staggering multiple medium PRFs, both
+                ambiguities can be resolved. Best for: <em>airborne fire-control radar
+                (look-down / shoot-down), multi-function fighter radars</em>. You need
+                reasonably good range AND velocity simultaneously.<br><br>
+                <strong style="color:#9d174d">High PRF</strong> — unambiguous in velocity, ambiguous in range.<br>
+                v_ua is large (few or no blind speeds), but R_ua is small → heavy
+                range folding. Best for: <em>air-to-air missile seekers, CW-like modes,
+                tail-chase geometry, velocity search</em>. You care about the target's
+                closing speed, not its exact range.
+              </div>
+            </div>
+
+            <div class="exp-block">
+              <div class="exp-title">Step 12 — When to optimise for v_ua vs R_ua</div>
+              <div class="exp-text">
+                The right choice depends on your <strong>target and operational scenario</strong>:<br><br>
+                <strong>Prioritise v_ua (high PRF)</strong> when:<br>
+                — Target velocity is high relative to blind speeds (fast jets, missiles)<br>
+                — Look-down into clutter (need to separate target Doppler from ground clutter)<br>
+                — Tail-chase geometry (low closing rates need fine Doppler resolution)<br>
+                — You have other sensors for range (e.g. TWS, data fusion)<br><br>
+                <strong>Prioritise R_ua (low PRF)</strong> when:<br>
+                — Long-range detection is critical (surveillance, early warning)<br>
+                — Targets are slow or stationary (ships, ground vehicles, weather)<br>
+                — You need unambiguous range for track initiation<br>
+                — SAR / ground mapping modes<br><br>
+                <strong>Use medium PRF</strong> when:<br>
+                — You need BOTH range and velocity (fighter radar, look-down)<br>
+                — Willing to use N-of-M detection and staggered PRFs to resolve both<br>
+                — Target could be at any range AND any velocity (general air-to-air)<br><br>
+                Use the <strong>Target Scenario</strong> panel to enter your target's max velocity and range,
+                then see which of your PRFs can handle it unambiguously.
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -767,6 +921,7 @@
 
     const rows = state.prfs.map(prf => {
       const vua = lam * prf / 2;
+      const rua = C / (2 * prf);           // unambiguous range (m)
       const hb  = state.bf / 2 * vua;
       const vis = new Float32Array(v.length);
       for (let i = 0; i < v.length; i++) {
@@ -774,7 +929,14 @@
         vis[i] = (phase < hb || phase > vua - hb) ? 0 : 1;
       }
       const cov = vis.reduce((a, b) => a + b, 0) / v.length;
-      return { vis, vua, cov };
+
+      // PRF regime classification
+      let regime;
+      if (rua > 75000)  regime = 'Low';
+      else if (vua > 500) regime = 'High';
+      else regime = 'Medium';
+
+      return { vis, vua, rua, regime, cov };
     });
 
     const comb = new Float32Array(v.length).fill(1);
@@ -833,8 +995,9 @@
         line: { width: 8, color: 'rgba(0,0,0,0)' },
         showlegend: false,
         hovertemplate:
-          `<b>PRF${i+1}</b>  ${state.prfs[i].toFixed(0)} Hz<br>` +
-          `v = %{x:.1f} m/s  ·  v_ua = ${r.vua.toFixed(1)} m/s<extra></extra>`,
+          `<b>PRF${i+1}</b>  ${state.prfs[i].toFixed(0)} Hz  [${r.regime} PRF]<br>` +
+          `v = %{x:.1f} m/s  ·  v_ua = ${r.vua.toFixed(1)} m/s<br>` +
+          `R_ua = ${(r.rua/1000).toFixed(1)} km<extra></extra>`,
       });
     });
 
@@ -937,9 +1100,178 @@
       </div>`;
 
     rows.forEach((r, i) => {
-      const el = document.getElementById(`vua-${i}`);
-      if (el) el.textContent = `v_ua = ${r.vua.toFixed(1)} m/s`;
+      const vuaEl = document.getElementById(`vua-${i}`);
+      if (vuaEl) vuaEl.textContent = `v_ua = ${r.vua.toFixed(1)} m/s`;
+      const ruaEl = document.getElementById(`rua-${i}`);
+      if (ruaEl) ruaEl.textContent = `R_ua = ${(r.rua / 1000).toFixed(1)} km`;
+      const regEl = document.getElementById(`regime-${i}`);
+      if (regEl) {
+        regEl.textContent = r.regime + ' PRF';
+        regEl.className = 'regime-badge regime-' + r.regime.toLowerCase();
+      }
     });
+
+    // Render the range-velocity trade-off chart
+    renderTradeoff(rows);
+
+    // Update target scenario advice
+    updateScenarioAdvice(rows);
+  }
+
+  // ── Range-Velocity trade-off chart ─────────────────────────────
+  function renderTradeoff(rows) {
+    const lam = C / state.f;
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const plotBg  = dark ? '#1c1c1a' : '#ffffff';
+    const gridCol = dark ? '#252420' : '#eeece8';
+    const fontCol = dark ? '#e8e6e0' : '#1a1a18';
+    const ruleCol = dark ? '#2e2d2a' : '#e0ddd7';
+    const isMobile = window.innerWidth <= 680;
+
+    const targetVel   = parseFloat(document.getElementById('target-vel').value) || 300;
+    const targetRange = (parseFloat(document.getElementById('target-range').value) || 150) * 1000; // m
+
+    // Hyperbolic constraint: R_ua × v_ua = c × λ / 4
+    // Sweep over PRF from 100 to 100000 Hz to draw the curve
+    const curvePrfs = [];
+    for (let p = 100; p <= 100000; p += 50) curvePrfs.push(p);
+    const curveVua = curvePrfs.map(p => lam * p / 2);
+    const curveRua = curvePrfs.map(p => C / (2 * p) / 1000); // km
+
+    const traces = [];
+
+    // Hyperbolic constraint curve
+    traces.push({
+      x: curveVua, y: curveRua,
+      type: 'scatter', mode: 'lines',
+      line: { color: dark ? '#555' : '#bbb', width: 1.5, dash: 'dot' },
+      name: 'R_ua × v_ua = const',
+      hoverinfo: 'skip',
+    });
+
+    // Regime shading: Low PRF zone (R_ua > 75 km)
+    traces.push({
+      x: [0, 0, curveVua[curveVua.length-1], curveVua[curveVua.length-1]],
+      y: [75, 500, 500, 75],
+      fill: 'toself', type: 'scatter', mode: 'lines',
+      line: { width: 0 },
+      fillcolor: dark ? 'rgba(12,74,110,0.15)' : 'rgba(224,242,254,0.5)',
+      name: 'Low PRF zone',
+      hoverinfo: 'skip',
+    });
+
+    // High PRF zone (v_ua > 500 m/s)
+    traces.push({
+      x: [500, 500, curveVua[curveVua.length-1], curveVua[curveVua.length-1]],
+      y: [0, 500, 500, 0],
+      fill: 'toself', type: 'scatter', mode: 'lines',
+      line: { width: 0 },
+      fillcolor: dark ? 'rgba(80,7,36,0.15)' : 'rgba(252,231,243,0.5)',
+      name: 'High PRF zone',
+      hoverinfo: 'skip',
+    });
+
+    // Target requirement crosshairs
+    traces.push({
+      x: [targetVel, targetVel], y: [0, 500],
+      type: 'scatter', mode: 'lines',
+      line: { color: '#ef4444', width: 1.5, dash: 'dash' },
+      name: `Target v = ${targetVel} m/s`,
+      hoverinfo: 'skip',
+    });
+    traces.push({
+      x: [0, curveVua[curveVua.length-1]], y: [targetRange/1000, targetRange/1000],
+      type: 'scatter', mode: 'lines',
+      line: { color: '#f97316', width: 1.5, dash: 'dash' },
+      name: `Target R = ${(targetRange/1000).toFixed(0)} km`,
+      hoverinfo: 'skip',
+    });
+
+    // PRF dots
+    rows.forEach((r, i) => {
+      const col = COLORS[i % COLORS.length];
+      const meetsVel   = r.vua >= targetVel;
+      const meetsRange = r.rua >= targetRange;
+      const symbol = (meetsVel && meetsRange) ? 'circle' : (meetsVel || meetsRange) ? 'diamond' : 'x';
+      traces.push({
+        x: [r.vua], y: [r.rua / 1000],
+        type: 'scatter', mode: 'markers+text',
+        marker: { color: col, size: 12, symbol, line: { color: dark ? '#fff' : '#000', width: 1 } },
+        text: [`PRF${i+1}`],
+        textposition: 'top center',
+        textfont: { size: 9, color: fontCol },
+        name: `PRF${i+1} ${state.prfs[i].toFixed(0)} Hz`,
+        hovertemplate:
+          `<b>PRF${i+1}</b> ${state.prfs[i].toFixed(0)} Hz [${r.regime}]<br>` +
+          `v_ua = ${r.vua.toFixed(1)} m/s<br>` +
+          `R_ua = ${(r.rua/1000).toFixed(1)} km<extra></extra>`,
+      });
+    });
+
+    const maxVua = Math.max(600, ...rows.map(r => r.vua * 1.2));
+    const maxRua = Math.max(200, ...rows.map(r => r.rua / 1000 * 1.2));
+
+    Plotly.react('tradeoff-chart', traces, {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: plotBg,
+      font: { family: "'DM Mono',monospace", color: fontCol, size: isMobile ? 8 : 10 },
+      margin: { l: 60, r: 16, t: 10, b: 50 },
+      showlegend: false,
+      height: isMobile ? 260 : 320,
+      xaxis: {
+        title: { text: 'Unambiguous Velocity v_ua (m/s)', font: { size: 10 } },
+        range: [0, maxVua], gridcolor: gridCol, linecolor: ruleCol,
+        tickfont: { size: 9 }, zeroline: false,
+      },
+      yaxis: {
+        title: { text: 'Unambiguous Range R_ua (km)', font: { size: 10 } },
+        range: [0, maxRua], gridcolor: gridCol, linecolor: ruleCol,
+        tickfont: { size: 9 }, zeroline: false,
+      },
+      annotations: [
+        { x: 50, y: maxRua * 0.92, text: 'LOW PRF', showarrow: false,
+          font: { size: 9, color: dark ? '#7dd3fc' : '#0369a1' } },
+        { x: maxVua * 0.88, y: 15, text: 'HIGH PRF', showarrow: false,
+          font: { size: 9, color: dark ? '#f9a8d4' : '#9d174d' } },
+        { x: maxVua * 0.45, y: maxRua * 0.35, text: 'MEDIUM PRF', showarrow: false,
+          font: { size: 9, color: dark ? '#fcd34d' : '#92400e' } },
+      ],
+    }, { responsive: true, displayModeBar: false });
+
+    // Update trade-off legend
+    const tLeg = document.getElementById('tradeoff-legend');
+    const meets = rows.filter(r => r.vua >= targetVel && r.rua >= targetRange).length;
+    tLeg.innerHTML =
+      `Each dot is one PRF on the R_ua\u2013v_ua hyperbola (R_ua \u00d7 v_ua = c\u03bb/4 = const for your radar).<br>` +
+      `<span style="color:#ef4444">\u2500\u2500</span> Target velocity requirement &nbsp; ` +
+      `<span style="color:#f97316">\u2500\u2500</span> Target range requirement &nbsp; ` +
+      `<b>${meets}/${rows.length}</b> PRFs meet both.`;
+  }
+
+  // ── Target scenario advice ────────────────────────────────────────
+  function updateScenarioAdvice(rows) {
+    const targetVel   = parseFloat(document.getElementById('target-vel').value) || 300;
+    const targetRange = (parseFloat(document.getElementById('target-range').value) || 150) * 1000;
+
+    const el = document.getElementById('scenario-advice');
+    const velOk    = rows.filter(r => r.vua >= targetVel);
+    const rangeOk  = rows.filter(r => r.rua >= targetRange);
+    const bothOk   = rows.filter(r => r.vua >= targetVel && r.rua >= targetRange);
+
+    let advice = '';
+    if (bothOk.length === rows.length) {
+      advice = `\u2705 All ${rows.length} PRFs are unambiguous in both range and velocity for this target.`;
+    } else if (bothOk.length > 0) {
+      advice = `\u26a0\ufe0f ${bothOk.length}/${rows.length} PRFs meet both. ` +
+               `${velOk.length} unambiguous in velocity, ${rangeOk.length} in range.`;
+    } else if (velOk.length > 0 || rangeOk.length > 0) {
+      advice = `\u274c No PRF meets both. ${velOk.length} ok for velocity, ${rangeOk.length} ok for range. ` +
+               `This is the classic trade-off \u2014 consider medium PRF with range/velocity dealiasing.`;
+    } else {
+      advice = `\u274c No PRF is unambiguous in either dimension for this target scenario. ` +
+               `Try lower PRFs for range or higher for velocity.`;
+    }
+    el.textContent = advice;
   }
 
   // ── Build PRF slider rows ─────────────────────────────────────────
@@ -963,6 +1295,8 @@
                    oninput="onPrfInput(${i}, this.value)" />
           </div>
           <div class="vua-label" id="vua-${i}">v_ua = — m/s</div>
+          <div class="rua-label" id="rua-${i}">R_ua = — km</div>
+          <span class="regime-badge" id="regime-${i}">—</span>
         </div>`;
     }).join('');
 
@@ -1032,6 +1366,16 @@
     document.getElementById('bfval').textContent = `${this.value}%`;
     clearTimeout(window._tb);
     window._tb = setTimeout(render, 80);
+  });
+
+  document.getElementById('target-vel').addEventListener('input', function () {
+    clearTimeout(window._ttv);
+    window._ttv = setTimeout(render, 200);
+  });
+
+  document.getElementById('target-range').addEventListener('input', function () {
+    clearTimeout(window._ttr);
+    window._ttr = setTimeout(render, 200);
   });
 
   // ── Sidebar toggle (mobile) ───────────────────────────────────────
