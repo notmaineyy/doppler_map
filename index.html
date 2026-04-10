@@ -44,6 +44,7 @@
       color: var(--ink);
       font-size: 12px;
       min-height: 100vh;
+      overflow-x: hidden;
       transition: background 0.2s, color 0.2s;
     }
 
@@ -515,9 +516,12 @@
       }
 
       /* Sliders: bigger touch target */
-      input[type="range"] { height: 3px; }
+      input[type="range"] { height: 3px; touch-action: none; }
       input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
       input[type="range"]::-moz-range-thumb     { width: 18px; height: 18px; }
+
+      /* Prevent double-tap zoom on interactive elements */
+      button, select, input { touch-action: manipulation; }
 
       /* PRF count row */
       .prf-count-row { flex-wrap: wrap; gap: 8px; }
@@ -837,7 +841,7 @@
     {
       const rowTop    = h - pad;
       const rowBottom = pad;
-      drawRuns(comb,             rowBottom, rowTop, '#8b6914', 0.60);
+      drawRuns(comb,             rowBottom, rowTop, '#16a34a', 0.70);
       drawRuns(comb.map(x=>1-x), rowBottom, rowTop, '#b83228', 0.45);
       traces.push({
         x: Array.from(v),
@@ -846,15 +850,17 @@
         line: { width: 8, color: 'rgba(0,0,0,0)' },
         showlegend: false,
         hovertemplate:
-          `<b>Combined</b><br>v = %{x:.1f} m/s<br>` +
+          `<b>COMBINED (all PRFs)</b><br>v = %{x:.1f} m/s<br>` +
           `Coverage: ${(combCov * 100).toFixed(1)}%<extra></extra>`,
       });
     }
 
-    for (let i = 0; i <= n + 2; i++)
+    for (let i = 0; i <= n + 2; i++) {
+      const isCombSep = (i === 1); // line between combined row and PRF rows
       shapes.push({ type: 'line', x0:0, x1:1, xref:'paper',
                     y0: i*h, y1: i*h, yref:'paper',
-                    line:{ color:'#e0ddd7', width:1 } });
+                    line:{ color: isCombSep ? '#888' : '#e0ddd7', width: isCombSep ? 2 : 1, dash: isCombSep ? 'dot' : 'solid' } });
+    }
 
     const tickVals = [], tickText = [];
     for (let i = 0; i < n; i++) {
@@ -863,7 +869,7 @@
       tickText.push(`PRF${i+1}  ${state.prfs[i].toFixed(0)} Hz  (${(rows[i].cov*100).toFixed(0)}%)`);
     }
     tickVals.push(0.5 * h);
-    tickText.push(`Combined  (${(combCov*100).toFixed(1)}%)`);
+    tickText.push(`COMBINED  (${(combCov*100).toFixed(1)}%)`);
 
     // Adjust chart height based on number of rows
     const chartHeight = Math.max(300, 80 + n * 68);
@@ -886,11 +892,19 @@
       margin: { l: leftMargin, r:16, t:16, b:46 },
       showlegend: false,
       height: chartHeight,
-      shapes: shapes.map(s => s.type === 'line' ? { ...s, line: { ...s.line, color: ruleCol } } : s),
+      shapes: shapes.map(s => {
+        if (s.type !== 'line') return s;
+        // Preserve the combined separator's special styling; theme the rest
+        if (s.line && s.line.dash === 'dot') {
+          const combCol = dark ? '#aaa' : '#888';
+          return { ...s, line: { ...s.line, color: combCol } };
+        }
+        return { ...s, line: { ...s.line, color: ruleCol } };
+      }),
       xaxis: {
         title: { text:'Radial Velocity (m/s)', font:{size:11} },
         range: [-state.vRange, state.vRange],
-        gridcolor: gridCol, zerolinecolor: zeroCol,
+        gridcolor: gridCol, zerolinecolor: zeroCol, zerolinewidth: 2,
         tickfont:{size:9}, linecolor: ruleCol,
       },
       yaxis: {
@@ -918,8 +932,8 @@
         Blind zone
       </div>
       <div class="leg-item">
-        <div class="leg-swatch" style="background:#8b6914;opacity:0.65"></div>
-        Combined — all PRFs
+        <div class="leg-swatch" style="background:#16a34a;opacity:0.75"></div>
+        Combined — all PRFs visible
       </div>`;
 
     rows.forEach((r, i) => {
